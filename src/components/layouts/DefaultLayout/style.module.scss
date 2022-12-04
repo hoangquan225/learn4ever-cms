@@ -1,0 +1,51 @@
+.logo {
+  height: 48px;
+  width: 100%;
+  background-image: url("../../../../src/assets/logo/death-and-life.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.admin__wrapper {
+  display: flex;
+  border-bottom: 1px solid #fff;
+  margin-bottom: 12px;
+}
+
+.admin__img {
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  margin: 16px;
+}
+
+.admin__text {
+  flex: 1;
+}
+
+.admin__name {
+  color: #fff;
+  text-transform: uppercase;
+  margin: 15px 0px 10px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin__logout {
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  border-radius: 80px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.site-layout .site-layout-background {
+  background: #fff;
+  padding: 24px;
+  min-height: 360px;
+  margin-top: 20px;
+}
