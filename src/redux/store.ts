@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "../pages/categorys/categorySlice";
+import categoryReducer from "../pages/categorys/categorySlice";
 
 export const store = configureStore({
     reducer: {
-        counter: counterReducer,
+        category: categoryReducer,
     },
     middleware: (getDefaultMiddle) => getDefaultMiddle({ serializableCheck: false }),
 });

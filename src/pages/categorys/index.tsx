@@ -1,20 +1,27 @@
 import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Modal, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload } from "antd";
+import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import styles from "./categorys.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
+import { async } from "q";
+import { apiLoadCategorys, apiUpdateCategory } from "../../api/categoryApi";
+import { categoryState, requestLoadCategorys } from "./categorySlice";
+import { unwrapResult } from "@reduxjs/toolkit";
+import { Category } from "../../submodule/models/category";
+import TTCSconfig from "../../submodule/common/config";
 
 
 const cx = classNames.bind(styles);
 interface DataType {
   key: string;
-  stt: number;
   name: string;
   slug: string;
-  status: string[];
+  status: number;
+  create: number;
+  value: Category;
 }
 
 const normFile = (e: any) => {
@@ -25,22 +32,60 @@ const normFile = (e: any) => {
   return e?.fileList;
 };
 
-const Category = () => {
+const CategoryPage = () => {
   const [form] = useForm();
   const dispatch = useAppDispatch();
-  const count = useAppSelector((state) => state.counter.value);
+  const categoryStates = useAppSelector(categoryState)
+  const categorys = categoryStates.categorys;
+  const loading = categoryStates.loading;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [datas, setDatas] = useState<DataType[]>([]);
 
-  const data: DataType[] = [];
+  const status = [
+    {
+      value: TTCSconfig.STATUS_PUBLIC,
+      label: 'công khai'
+    }, {
+      value: TTCSconfig.STATUS_PRIVATE,
+      label: 'riêng tư'
+    }, {
+      value: TTCSconfig.STATUS_DELETED,
+      label: 'đã xóa'
+    }
+  ]
 
-  for (let i = 1; i <= 12; i++) {
-    data.push({
-      key: `${i}`,
-      stt: i,
-      name: `Lớp ${i}`,
-      slug: `lop-${i}`,
-      status: ["công khai"],
-    });
+  useEffect(() => {
+    loadCategorys()
+  }, [])
+
+  useEffect(() => {
+    if (categorys.length) {
+      setDatas(categorys.map(o => convertDataToTable(o)))
+    }
+  }, [categorys])
+
+  const loadCategorys = async () => {
+    try {
+      const actionResult = await dispatch(requestLoadCategorys({
+        status: 1
+      }))
+      unwrapResult(actionResult)
+    } catch (error) {
+      notification.error({
+        message: 'không tải được danh sach danh mục'
+      })
+    }
+  }
+
+  const convertDataToTable = (value: Category) => {
+    return {
+      key: `${value?.id || Math.random()}`,
+      name: value?.name,
+      slug: value?.slug,
+      status: value?.status,
+      create: value?.createDate || 0,
+      value: value
+    }
   }
 
   const showModal = () => {
@@ -67,8 +112,9 @@ const Category = () => {
   const columns: ColumnsType<DataType> = [
     {
       title: "STT",
-      dataIndex: "stt",
       key: "stt",
+      align: 'center',
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Tên danh mục",
@@ -86,21 +132,11 @@ const Category = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (_, { status }) => (
+      render: (text: number) => (
         <>
-          {status.map((tag) => {
-            let color = "";
-            if (tag === "công khai") {
-              color = "green";
-            } else {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
+          <Tag color={text === TTCSconfig.STATUS_PUBLIC ? 'green' : 'red'}>
+            {status.find(o => o.value === text)?.label}
+          </Tag>
         </>
       ),
     },
@@ -143,7 +179,7 @@ const Category = () => {
       >
         Thêm mới
       </Button>
-      
+
       <Select
         placeholder={'Bộ lọc'}
         style={{ width: 150, marginLeft: "20px" }}
@@ -160,7 +196,7 @@ const Category = () => {
             value: 0,
             label: 'riêng tư'
           },
-        ]} 
+        ]}
       />
 
       <Modal title="Tạo danh mục" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} okText="Lưu" cancelText="Hủy">
@@ -219,7 +255,7 @@ const Category = () => {
             </Col>
 
             <Col className="gutter-row" span={24}>
-              <Form.Item name ='avatar' label="Avatar danh mục">
+              <Form.Item name='avatar' label="Avatar danh mục">
                 <Form.Item name="avatar" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                   <Upload.Dragger name="files" action="/upload.do" listType="picture" className={cx("avatar__upload")}>
                     <p className="ant-upload-drag-icon">
@@ -230,14 +266,14 @@ const Category = () => {
                 </Form.Item>
               </Form.Item>
             </Col>
-            
+
           </Row>
         </Form>
       </Modal>
 
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={datas} loading={loading}/>
     </div>
   );
 };
 
-export default Category;
+export default CategoryPage;
