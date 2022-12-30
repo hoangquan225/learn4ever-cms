@@ -39,6 +39,11 @@ export const categorySlice = createSlice({
             state.loading = true;
         })
     })
+    actionList.forEach(action => {
+        builder.addCase(action.rejected, (state) => {
+            state.loading = false;
+        })
+    })
 
     // load 
     builder.addCase(requestLoadCategorys.fulfilled, (state, action: PayloadAction<{

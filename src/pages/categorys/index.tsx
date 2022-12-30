@@ -1,17 +1,18 @@
 import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import styles from "./categorys.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
-import { async } from "q";
-import { apiLoadCategorys, apiUpdateCategory } from "../../api/categoryApi";
 import { categoryState, requestLoadCategorys } from "./categorySlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 import { Category } from "../../submodule/models/category";
 import TTCSconfig from "../../submodule/common/config";
+import { convertSlug } from "../../utils/slug";
+import TinymceEditor from "../../components/TinymceEditor";
+import UploadImg from "../../components/UploadImg";
 
 
 const cx = classNames.bind(styles);
@@ -34,12 +35,14 @@ const normFile = (e: any) => {
 
 const CategoryPage = () => {
   const [form] = useForm();
+  const descRef = useRef<any>();
   const dispatch = useAppDispatch();
   const categoryStates = useAppSelector(categoryState)
   const categorys = categoryStates.categorys;
   const loading = categoryStates.loading;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [datas, setDatas] = useState<DataType[]>([]);
+  const [dataUpload, setDataupload] = useState<string>()
 
   const status = [
     {
@@ -199,7 +202,16 @@ const CategoryPage = () => {
         ]}
       />
 
-      <Modal title="Tạo danh mục" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} okText="Lưu" cancelText="Hủy">
+      <Modal
+        title="Tạo danh mục"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText="Lưu"
+        cancelText="Hủy"
+        width='90%'
+        maskClosable={false}
+      >
         <Form
           layout="vertical"
           name="register"
@@ -208,8 +220,27 @@ const CategoryPage = () => {
           }}
           form={form}
         >
-          <Row gutter={16}>
-            <Col className="gutter-row" span={12}>
+          <Row gutter={{ xl: 48, md: 16, xs: 0 }}>
+            <Col xl={16} md={16} xs={24} style={{ borderRight: "0.1px solid #ccc" }}>
+              <Form.Item className="model-category__formItem" label="Mô tả">
+                <TinymceEditor
+                  id="descriptionClubs"
+                  key="descriptionClubs"
+                  editorRef={descRef}
+                  heightEditor="600px"
+                />
+              </Form.Item>
+
+
+            </Col>
+            <Col xl={8} md={8} xs={24}>
+              <Form.Item label={<h3>{'Ảnh danh mục'}</h3>} name="avatar">
+                <UploadImg
+                  defaultUrl={dataUpload}
+                  onChangeUrl={(value) => setDataupload(value)}
+                />
+              </Form.Item>
+
               <Form.Item
                 name='name'
                 label="Tên danh mục"
@@ -220,26 +251,21 @@ const CategoryPage = () => {
                   },
                 ]}
               >
-                <Input />
+                <Input onChange={(e) => {
+                  form.setFieldsValue({ slug: convertSlug(e.target.value) })
+                }} />
               </Form.Item>
-            </Col>
 
-            <Col className="gutter-row" span={12}>
-              <Form.Item
-                name='slug'
-                label="Đường dẫn"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập trường này!",
-                  },
-                ]}
+              <Form.Item name='slug' label="Đường dẫn" rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập trường này!",
+                },
+              ]}
               >
                 <Input />
               </Form.Item>
-            </Col>
 
-            <Col className="gutter-row" span={12}>
               <Form.Item name='status' label="Trạng thái">
                 <Select options={[
                   {
@@ -254,7 +280,7 @@ const CategoryPage = () => {
               </Form.Item>
             </Col>
 
-            <Col className="gutter-row" span={24}>
+            {/* <Col className="gutter-row" span={24}>
               <Form.Item name='avatar' label="Avatar danh mục">
                 <Form.Item name="avatar" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                   <Upload.Dragger name="files" action="/upload.do" listType="picture" className={cx("avatar__upload")}>
@@ -265,13 +291,13 @@ const CategoryPage = () => {
                   </Upload.Dragger>
                 </Form.Item>
               </Form.Item>
-            </Col>
+            </Col> */}
 
           </Row>
         </Form>
       </Modal>
 
-      <Table columns={columns} dataSource={datas} loading={loading}/>
+      <Table columns={columns} dataSource={datas} loading={loading} />
     </div>
   );
 };
