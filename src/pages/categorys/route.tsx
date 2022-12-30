@@ -2,7 +2,7 @@ import { FileOutlined } from "@ant-design/icons";
 import { lazy } from "react";
 
 const route = {
-  path: "/CATEGORY",
+  path: "/category",
   label: "Danh mục",
   icon: <FileOutlined />,
   exact: true,

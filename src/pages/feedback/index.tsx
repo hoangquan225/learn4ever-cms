@@ -121,7 +121,8 @@ const Feedback = () => {
     <>
       <Select
         // defaultValue={provinceData[0]}
-        style={{ width: 120, marginBottom: "20px" }}
+        placeholder={'Chọn danh mục'}
+        style={{ width: 200, marginBottom: "20px" }}
         onChange={handleProvinceChange}
         options={provinceData.map((province) => ({
           label: province,
@@ -129,8 +130,9 @@ const Feedback = () => {
         }))}
       />
       <Select
-        style={{ width: 120, marginBottom: "20px" }}
+        style={{ width: 200, marginBottom: "20px",  marginLeft: "10px"  }}
         // value={secondCity}
+        placeholder={'Chọn khóa học'}
         onChange={onSecondCityChange}
         options={cities.map((city) => ({ label: city, value: city }))}
       />
