@@ -14,7 +14,6 @@ import TinymceEditor from "../../components/TinymceEditor";
 import UploadImg from "../../components/UploadImg";
 import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
-import { apiLoadCoursesByIdCategory } from "../../api/courseApi";
 
 
 const cx = classNames.bind(styles);
@@ -48,7 +47,7 @@ const CoursePage = () => {
   const [dataUpload, setDataupload] = useState<string | null>()
   const [valueEdit, setValueEdit] = useState<Course | undefined>();
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
-  const [idCategory, setIdCategory] = useState();
+  const [idCategorys, setIdCategorys] = useState();
 
   const categoryStates = useAppSelector(categoryState);
   const categorys = categoryStates.categorys;
@@ -76,8 +75,8 @@ const CoursePage = () => {
 
   useEffect(() => {
     if (valueEdit) {
-      const { courseName, slug, status, des } = valueEdit
-      form.setFieldsValue({ courseName, slug, status })
+      const { courseName, slug, status, des, idCategory } = valueEdit
+      form.setFieldsValue({ courseName, slug, status, idCategory })
       descRef?.current?.setContent(des)
     }
   }, [valueEdit])
@@ -91,12 +90,12 @@ const CoursePage = () => {
   }, []);
 
   useEffect(() => {
-    if(idCategory) {
-      loadCoursesByIdCategory(idCategory, statusCourse );
+    if(idCategorys) {
+      loadCoursesByIdCategory(idCategorys, statusCourse );
     }else {
       loadCourses(statusCourse)
     }
-  }, [statusCourse, idCategory]);
+  }, [statusCourse, idCategorys]);
 
 
   const loadCoursesByIdCategory = async (idCategory: string, status: number) => {
@@ -314,7 +313,7 @@ const CoursePage = () => {
           label: data.name,
         }))}
         onChange={(value) => {
-          setIdCategory(value)
+          setIdCategorys(value)
         }}
       />
 
