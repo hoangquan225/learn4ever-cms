@@ -1,7 +1,7 @@
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import routes from "../../../pages/routes";
 import classNames from "classnames/bind";
 import styles from "./style.module.scss";
@@ -30,12 +30,31 @@ function getItem(
 
 const LayoutDefault = ({ children }: { children?: any }) => {
   const navigate = useNavigate();
+  let location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [current, setCurrent] = useState(
+    location.pathname === "/" || location.pathname === ""
+      ? "/category"
+      : location.pathname,
+  );
+  //or simply use const [current, setCurrent] = useState(location.pathname)        
+
+  useEffect(() => {
+    if (location) {
+      if (current !== location.pathname) {
+        setCurrent(location.pathname);
+      }
+    }
+  }, [location, current]);
+
+  function handleClick(e: any) {
+    setCurrent(e.key);
+  }
 
   const items: MenuItem[] = routes
     .filter(({ label }) => label !== "")
     .map(({ path, label, icon }, index) =>
-      getItem(label, index, icon, () => {
+      getItem(label, path, icon, () => {
         navigate(path);
       })
     );
@@ -73,9 +92,11 @@ const LayoutDefault = ({ children }: { children?: any }) => {
         </div>
         <Menu
           theme="dark"
-          defaultSelectedKeys={["0"]}
+          defaultSelectedKeys={[current]}
           mode="inline"
           items={items}
+          onClick={handleClick}
+          selectedKeys={[current]}
         />
       </Sider>
       <Layout className={cx("site-layout")}>
