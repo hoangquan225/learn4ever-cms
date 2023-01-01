@@ -1,5 +1,5 @@
 import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload } from "antd";
+import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
@@ -13,6 +13,7 @@ import TTCSconfig from "../../submodule/common/config";
 import { convertSlug } from "../../utils/slug";
 import TinymceEditor from "../../components/TinymceEditor";
 import UploadImg from "../../components/UploadImg";
+import { PAGE_SIZE } from "../../utils/contraint";
 
 
 const cx = classNames.bind(styles);
@@ -45,6 +46,7 @@ const CategoryPage = () => {
   const [dataUpload, setDataupload] = useState<string | null>()
   const [valueEdit, setValueEdit] = useState<Category | undefined>();
   const [statusCategory, setStatusCategory] = useState<number>(TTCSconfig.STATUS_PUBLIC);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const status = [
     {
@@ -103,9 +105,10 @@ const CategoryPage = () => {
     }
   }
 
-  const showModal = () => {
+  const openCreateModal = () => {
     setIsModalOpen(true);
     setValueEdit(undefined)
+    setIsEdit(false)
   };
 
   const handleOk = () => {
@@ -197,6 +200,7 @@ const CategoryPage = () => {
             <Button onClick={() => {
               setIsModalOpen(true)
               setValueEdit(text)
+              setIsEdit(true)
             }}>
               <EditOutlined />
             </Button>
@@ -223,34 +227,47 @@ const CategoryPage = () => {
 
   return (
     <div>
-      <Button
-        type="primary"
-        style={{
-          marginBottom: "10px",
-        }}
-        onClick={showModal}
-      >
-        Thêm mới
-      </Button>
+      <Space size='large'>
+        <Button
+          type="primary"
+          style={{
+            marginBottom: "10px",
+          }}
+          onClick={openCreateModal}
+        >
+          Thêm mới
+        </Button>
 
-      <Select
-        placeholder={'Bộ lọc'}
-        style={{ width: 150, marginLeft: "20px" }}
-        defaultValue={TTCSconfig.STATUS_PUBLIC}
-        options={status}
-        onChange={(value) => {
-          setStatusCategory(value)
-        }}
+        <Space size='small'>
+          <label>Chọn trạng thái : </label>
+          <Select
+            placeholder={'Bộ lọc'}
+            style={{ width: 150, marginLeft: "20px" }}
+            defaultValue={TTCSconfig.STATUS_PUBLIC}
+            options={status}
+            onChange={(value) => {
+              setStatusCategory(value)
+            }}
+          />
+        </Space>
+      </Space>
+
+      <Typography.Title level={3}>Danh sách danh mục: </Typography.Title>
+
+      <Table columns={columns} dataSource={datas} loading={loading} pagination={{
+        pageSize: PAGE_SIZE
+      }} 
       />
 
       <Modal
-        title="Tạo danh mục"
+        title={`${isEdit ? 'Chỉnh sửa' : 'Tạo'} danh mục`}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText="Lưu"
+        okText={`${isEdit ? 'Cập nhật' : 'Tạo'}`}
         cancelText="Hủy"
         width='90%'
+        style={{ top: 20 }}
         maskClosable={false}
       >
         <Form
@@ -312,12 +329,10 @@ const CategoryPage = () => {
                 <Select options={status} />
               </Form.Item>
             </Col>
-            
+
           </Row>
         </Form>
       </Modal>
-
-      <Table columns={columns} dataSource={datas} loading={loading} />
     </div>
   );
 };
