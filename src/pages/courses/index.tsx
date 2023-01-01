@@ -325,6 +325,7 @@ const CoursePage = () => {
         okText="Lưu"
         cancelText="Hủy"
         width='90%'
+        style={{top:20}}
         maskClosable={false}
       >
         <Form
@@ -337,13 +338,13 @@ const CoursePage = () => {
         >
           <Row gutter={{ xl: 48, md: 16, xs: 0 }}>
             <Col xl={16} md={16} xs={24} style={{ borderRight: "0.1px solid #ccc" }}>
-              <Form.Item className="model-category__formItem" label="Mô tả">
+              <Form.Item label="Mô tả">
                 <TinymceEditor
                   id="descriptionCategory"
                   key="descriptionCategory"
                   editorRef={descRef}
                   value={valueEdit?.des ?? ''}
-                  heightEditor="600px"
+                  heightEditor="500px"
                 />
               </Form.Item>
 

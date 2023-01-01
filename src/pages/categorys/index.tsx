@@ -286,7 +286,7 @@ const CategoryPage = () => {
                   key="descriptionCategory"
                   editorRef={descRef}
                   value={valueEdit?.des ?? ''}
-                  heightEditor="600px"
+                  heightEditor="500px"
                 />
               </Form.Item>
 
