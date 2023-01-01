@@ -139,6 +139,7 @@ const CategoryPage = () => {
     setIsModalOpen(false);
     form.resetFields();
     descRef?.current?.setContent('')
+    setValueEdit(undefined)
   };
 
   const handleDelete = async (value: Category) => {
