@@ -94,10 +94,27 @@ const CategoryPage = () => {
 
   const handleOk = () => {
     form.validateFields()
-      .then(value => {
-        console.log({ value });
-        setIsModalOpen(false);
-        form.resetFields()
+      .then(async (value) => {
+        try {
+          const data = await dispatch(requestUpdateCategorys({
+            id: valueEdit?.id,
+            ...value,
+            des: descRef?.current?.getContent(),
+            avatar: dataUpload
+          }))
+          console.log(data);
+
+          unwrapResult(data)
+          dispatch(requestLoadCategorys({
+            status: statusCategory
+          }))
+        } catch (error) {
+          notification.error({
+            message: 'cập nhật không được',
+            duration: 1.5
+          })
+        }
+        handleCancel();
       })
   };
 
