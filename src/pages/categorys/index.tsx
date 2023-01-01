@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import styles from "./categorys.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
-import { categoryState, requestLoadCategorys } from "./categorySlice";
+import { categoryState, requestLoadCategorys, requestUpdateCategorys } from "./categorySlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 import { Category } from "../../submodule/models/category";
 import TTCSconfig from "../../submodule/common/config";
@@ -42,7 +42,9 @@ const CategoryPage = () => {
   const loading = categoryStates.loading;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [datas, setDatas] = useState<DataType[]>([]);
-  const [dataUpload, setDataupload] = useState<string>()
+  const [dataUpload, setDataupload] = useState<string | null>()
+  const [valueEdit, setValueEdit] = useState<Category | undefined>();
+  const [statusCategory, setStatusCategory] = useState<number>(TTCSconfig.STATUS_PUBLIC);
 
   const status = [
     {
@@ -58,19 +60,29 @@ const CategoryPage = () => {
   ]
 
   useEffect(() => {
-    loadCategorys()
+    loadCategorys(TTCSconfig.STATUS_PUBLIC)
   }, [])
 
   useEffect(() => {
-    if (categorys.length) {
-      setDatas(categorys.map(o => convertDataToTable(o)))
-    }
+    setDatas(categorys?.map(o => convertDataToTable(o)))
   }, [categorys])
 
-  const loadCategorys = async () => {
+  useEffect(() => {
+    if (valueEdit) {
+      const { name, slug, status, des, index } = valueEdit
+      form.setFieldsValue({ name, slug, status })
+      descRef?.current?.setContent(des)
+    }
+  }, [valueEdit])
+
+  useEffect(() => {
+    loadCategorys(statusCategory)
+  }, [statusCategory])
+
+  const loadCategorys = async (status: number) => {
     try {
       const actionResult = await dispatch(requestLoadCategorys({
-        status: 1
+        status
       }))
       unwrapResult(actionResult)
     } catch (error) {
@@ -93,24 +105,56 @@ const CategoryPage = () => {
 
   const showModal = () => {
     setIsModalOpen(true);
+    setValueEdit(undefined)
   };
 
   const handleOk = () => {
     form.validateFields()
-      .then(value => {
-        console.log({ value });
-        setIsModalOpen(false);
-        form.resetFields()
+      .then(async (value) => {
+        try {
+          const data = await dispatch(requestUpdateCategorys({
+            id: valueEdit?.id,
+            ...value,
+            des: descRef?.current?.getContent(),
+            avatar: dataUpload
+          }))
+          unwrapResult(data)
+          dispatch(requestLoadCategorys({
+            status: statusCategory
+          }))
+        } catch (error) {
+          notification.error({
+            message: 'cập nhật không được',
+            duration: 1.5
+          })
+        }
+        handleCancel();
       })
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    form.resetFields();
+    descRef?.current?.setContent('')
   };
 
-  const confirm = () => {
-    message.success('Click on Yes');
-  };
+  const handleDelete = async (value: Category) => {
+    try {
+      const data = await dispatch(requestUpdateCategorys({
+        ...value,
+        status: TTCSconfig.STATUS_DELETED
+      }))
+      unwrapResult(data)
+      dispatch(requestLoadCategorys({
+        status: statusCategory
+      }))
+    } catch (error) {
+      notification.error({
+        message: 'cập nhật không được',
+        duration: 1.5
+      })
+    }
+  }
 
   const columns: ColumnsType<DataType> = [
     {
@@ -146,17 +190,23 @@ const CategoryPage = () => {
     {
       title: "Hành động",
       key: "action",
-      render: (_, record) => (
+      dataIndex: "value",
+      render: (text: Category, record) => (
         <Space size="middle">
           <Tooltip placement="top" title="Chỉnh sửa">
-            <Button>
+            <Button onClick={() => {
+              setIsModalOpen(true)
+              setValueEdit(text)
+            }}>
               <EditOutlined />
             </Button>
           </Tooltip>
 
           <Popconfirm
             title="Bạn có chắc bạn muốn xóa mục này không?"
-            onConfirm={confirm}
+            onConfirm={() => {
+              handleDelete(text)
+            }}
             okText="Yes"
             cancelText="No"
           >
@@ -186,20 +236,11 @@ const CategoryPage = () => {
       <Select
         placeholder={'Bộ lọc'}
         style={{ width: 150, marginLeft: "20px" }}
-        options={[
-          {
-            value: 2,
-            label: 'Tất cả'
-          },
-          {
-            value: 1,
-            label: 'công khai'
-          },
-          {
-            value: 0,
-            label: 'riêng tư'
-          },
-        ]}
+        defaultValue={TTCSconfig.STATUS_PUBLIC}
+        options={status}
+        onChange={(value) => {
+          setStatusCategory(value)
+        }}
       />
 
       <Modal
@@ -224,9 +265,10 @@ const CategoryPage = () => {
             <Col xl={16} md={16} xs={24} style={{ borderRight: "0.1px solid #ccc" }}>
               <Form.Item className="model-category__formItem" label="Mô tả">
                 <TinymceEditor
-                  id="descriptionClubs"
-                  key="descriptionClubs"
+                  id="descriptionCategory"
+                  key="descriptionCategory"
                   editorRef={descRef}
+                  value={valueEdit?.des ?? ''}
                   heightEditor="600px"
                 />
               </Form.Item>
@@ -236,7 +278,7 @@ const CategoryPage = () => {
             <Col xl={8} md={8} xs={24}>
               <Form.Item label={<h3>{'Ảnh danh mục'}</h3>} name="avatar">
                 <UploadImg
-                  defaultUrl={dataUpload}
+                  defaultUrl={valueEdit?.avatar}
                   onChangeUrl={(value) => setDataupload(value)}
                 />
               </Form.Item>
@@ -267,32 +309,10 @@ const CategoryPage = () => {
               </Form.Item>
 
               <Form.Item name='status' label="Trạng thái">
-                <Select options={[
-                  {
-                    value: 1,
-                    label: 'công khai'
-                  },
-                  {
-                    value: 0,
-                    label: 'riêng tư'
-                  }
-                ]} />
+                <Select options={status} />
               </Form.Item>
             </Col>
-
-            {/* <Col className="gutter-row" span={24}>
-              <Form.Item name='avatar' label="Avatar danh mục">
-                <Form.Item name="avatar" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
-                  <Upload.Dragger name="files" action="/upload.do" listType="picture" className={cx("avatar__upload")}>
-                    <p className="ant-upload-drag-icon">
-                      <CloudUploadOutlined />
-                    </p>
-                    <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-                  </Upload.Dragger>
-                </Form.Item>
-              </Form.Item>
-            </Col> */}
-
+            
           </Row>
         </Form>
       </Modal>

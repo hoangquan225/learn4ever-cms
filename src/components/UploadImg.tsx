@@ -36,7 +36,11 @@ const UploadImg = ({
                 }
             ])
             onChangeUrl(defaultUrl)
+        } else { 
+            setFileList([])
+            onChangeUrl('')
         }
+        
     }, [defaultUrl])
 
     const handleCancel = () => setPreviewOpen(false);
@@ -78,7 +82,7 @@ const UploadImg = ({
                 {uploadButton}
             </Upload>
             <Modal
-                visible={previewOpen}
+                open={previewOpen}
                 title={previewTitle}
                 footer={null}
                 onCancel={handleCancel}

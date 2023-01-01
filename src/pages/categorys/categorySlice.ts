@@ -2,21 +2,21 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Category } from '../../submodule/models/category'
-import { apiLoadCategorys } from '../../api/categoryApi'
+import { apiLoadCategorys, apiUpdateCategory } from '../../api/categoryApi'
 
 // Define a type for the slice state
 interface CategoryState {
-  categorys : Category[],
-  loading: boolean, 
-  error: string, 
+  categorys: Category[],
+  loading: boolean,
+  error: string,
   categoryInfo: Category | null
 }
 
 // Define the initial state using that type
 const initialState: CategoryState = {
-  categorys: [], 
-  loading: false, 
-  error: '', 
+  categorys: [],
+  loading: false,
+  error: '',
   categoryInfo: null
 }
 
@@ -25,34 +25,47 @@ export const requestLoadCategorys = createAsyncThunk('category/loadCategorys', a
   return res.data
 })
 
+export const requestUpdateCategorys = createAsyncThunk('category/updateCategorys', async (props: Category) => {
+  const res = await apiUpdateCategory(props);
+  return res.data
+})
+
 export const categorySlice = createSlice({
   name: 'category',
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    
+
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCategorys];
+    const actionList = [requestLoadCategorys, requestUpdateCategorys];
     actionList.forEach(action => {
-        builder.addCase(action.pending, (state) => {
-            state.loading = true;
-        })
+      builder.addCase(action.pending, (state) => {
+        state.loading = true;
+      })
     })
     actionList.forEach(action => {
-        builder.addCase(action.rejected, (state) => {
-            state.loading = false;
-        })
+      builder.addCase(action.rejected, (state) => {
+        state.loading = false;
+      })
     })
 
     // load 
     builder.addCase(requestLoadCategorys.fulfilled, (state, action: PayloadAction<{
-      data:Category[], 
+      data: Category[],
       status: number
     }>) => {
       state.loading = false;
-      state.categorys = action.payload.data;
-  })
+      state.categorys = action.payload.data.map((o) => new Category(o));
+    })
+
+    builder.addCase(requestUpdateCategorys.fulfilled, (state, action: PayloadAction<{
+      data: Category,
+      status: number
+    }>) => {
+      state.loading = false;
+      state.categoryInfo = new Category(action.payload.data)
+    })
   }
 })
 
