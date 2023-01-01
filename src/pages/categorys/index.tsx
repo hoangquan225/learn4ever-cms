@@ -231,24 +231,22 @@ const CategoryPage = () => {
       <Space size='large'>
         <Button
           type="primary"
-          style={{
-            marginBottom: "10px",
-          }}
           onClick={openCreateModal}
         >
           Thêm mới
         </Button>
 
         <Space size='small'>
-          <label>Chọn trạng thái : </label>
+          <label style={{ marginLeft: "20px" }}>Chọn trạng thái:</label>
           <Select
             placeholder={'Bộ lọc'}
-            style={{ width: 150, marginLeft: "20px" }}
+            style={{ width: 150, marginLeft: "10px" }}
             defaultValue={TTCSconfig.STATUS_PUBLIC}
             options={status}
             onChange={(value) => {
               setStatusCategory(value)
             }}
+            listHeight={20}
           />
         </Space>
       </Space>

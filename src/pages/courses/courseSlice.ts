@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Course } from '../../submodule/models/course'
-import { apiLoadCourses, apiLoadCoursesByIdCategory, apiUpdateCourse } from '../../api/courseApi'
+import { apiLoadByIdTagAndCategory, apiLoadCourses, apiLoadCoursesByIdCategory, apiUpdateCourse } from '../../api/courseApi'
 
 // Define a type for the slice state
 interface CourseState {
@@ -30,6 +30,12 @@ export const requestLoadCoursesByIdCategory = createAsyncThunk('course/loadCours
   return res.data
 })
 
+export const requestLoadByIdTagAndCategory = createAsyncThunk('course/loadByIdTagAndCategory', async (props: {idCategory:string, idTag:string, status: number }) => {
+  const res = await apiLoadByIdTagAndCategory(props);
+  return res.data
+})
+
+
 export const requestUpdateCourse = createAsyncThunk('course/updateCourse', async (props: Course) => {
   const res = await apiUpdateCourse(props);
   return res.data
@@ -43,7 +49,7 @@ export const courseSlice = createSlice({
 
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadCoursesByIdCategory];
+    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadCoursesByIdCategory, requestLoadByIdTagAndCategory];
     actionList.forEach(action => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -65,6 +71,15 @@ export const courseSlice = createSlice({
     })
     // load by id category
     builder.addCase(requestLoadCoursesByIdCategory.fulfilled, (state, action: PayloadAction<{
+      data: Course[],
+      status: number
+    }>) => {
+      state.loading = false;
+      state.courses = action.payload.data.map((o) => new Course(o));
+    })
+    
+    // load by id category
+    builder.addCase(requestLoadByIdTagAndCategory.fulfilled, (state, action: PayloadAction<{
       data: Course[],
       status: number
     }>) => {

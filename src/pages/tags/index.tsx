@@ -142,6 +142,7 @@ const TagPage = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
+    setValueEdit(undefined)
     // descRef?.current?.setContent('')
   };
 
@@ -180,12 +181,14 @@ const TagPage = () => {
       title: "Danh mục cha",
       dataIndex: "idCategory",
       key: "idCategory",
-      render: (idCategory: string) => (
+      render: (idCategory: string[]) => (
         <> 
-          {categorys.map((o) =>(o.id == idCategory ? o.name : ""))}
+          {categorys.map((o) =>(
+            idCategory.find((c) =>(c === o.id)) ? <Tag>{o.name}</Tag> : undefined
+          ))}
         </>
       ),
-    },
+    },  
     {
       title: "Trạng thái",
       key: "status",
@@ -290,10 +293,13 @@ const TagPage = () => {
               </Form.Item>
 
               <Form.Item name='idCategory' label="Danh mục cha">
-                <Select options={categorys.map((data) => ({
-                  value: data.id,
-                  label: data.name,
-                }))} />
+                <Select 
+                  mode="multiple"
+                  options={categorys.map((data) => ({
+                    value: data.id,
+                    label: data.name,
+                  }))} 
+                />
               </Form.Item>
 
               <Form.Item name='status' label="Trạng thái">

@@ -1,12 +1,12 @@
 import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload } from "antd";
+import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import styles from "./course.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
-import { courseState, requestLoadCourses, requestLoadCoursesByIdCategory, requestUpdateCourse } from "./courseSlice";
+import { courseState, requestLoadByIdTagAndCategory, requestLoadCourses, requestLoadCoursesByIdCategory, requestUpdateCourse } from "./courseSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 import TTCSconfig from "../../submodule/common/config";
 import { convertSlug } from "../../utils/slug";
@@ -14,6 +14,7 @@ import TinymceEditor from "../../components/TinymceEditor";
 import UploadImg from "../../components/UploadImg";
 import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
+import { requestLoadTags, tagState } from "../tags/tagSlice";
 
 
 const cx = classNames.bind(styles);
@@ -25,6 +26,7 @@ interface DataType {
   create: number;
   value: Course;
   idCategory: string | undefined;
+  idTag: string | undefined;
 }
 
 const normFile = (e: any) => {
@@ -48,9 +50,14 @@ const CoursePage = () => {
   const [valueEdit, setValueEdit] = useState<Course | undefined>();
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
   const [idCategorys, setIdCategorys] = useState();
+  const [idTags, setIdTags] = useState();
 
   const categoryStates = useAppSelector(categoryState);
   const categorys = categoryStates.categorys;
+  const tagStates = useAppSelector(tagState);
+  const tags = tagStates.tags;
+
+  console.log(tags);
   
   const status = [  
     {
@@ -87,21 +94,42 @@ const CoursePage = () => {
   
   useEffect(() => {
     loadCategorys();
+    loadTags();
   }, []);
 
   useEffect(() => {
-    if(idCategorys) {
-      loadCoursesByIdCategory(idCategorys, statusCourse );
+    // if(idCategorys) {
+    //   loadCoursesByIdCategory(idCategorys, statusCourse );
+    // }else {
+    //   loadCourses(statusCourse)
+    // }
+    if(idTags || idCategorys) {
+      loadByIdTagAndCategory(idCategorys, idTags, statusCourse );
     }else {
       loadCourses(statusCourse)
     }
-  }, [statusCourse, idCategorys]);
+  }, [statusCourse, idCategorys, idTags]);
 
 
-  const loadCoursesByIdCategory = async (idCategory: string, status: number) => {
+  // const loadCoursesByIdCategory = async (idCategory: string, status: number) => {
+  //   try {
+  //     const actionResult = await dispatch(requestLoadCoursesByIdCategory({
+  //       idCategory,
+  //       status
+  //     }))
+  //     unwrapResult(actionResult)
+  //   } catch (error) {
+  //     notification.error({
+  //       message: 'không tải được danh sach danh mục'
+  //     })
+  //   }
+  // }
+
+  const loadByIdTagAndCategory = async (idCategory: any, idTag: any, status: number) => {
     try {
-      const actionResult = await dispatch(requestLoadCoursesByIdCategory({
+      const actionResult = await dispatch(requestLoadByIdTagAndCategory({
         idCategory,
+        idTag,
         status
       }))
       unwrapResult(actionResult)
@@ -140,6 +168,21 @@ const CoursePage = () => {
     }
   };
 
+  const loadTags = async () => {
+    try {
+      const actionResult = await dispatch(
+        requestLoadTags({
+          status: 1,
+        })
+      );
+      const res = unwrapResult(actionResult);
+    } catch (error) {
+      notification.error({
+        message: "không tải được danh sach danh mục",
+      });
+    }
+  };
+
   const convertDataToTable = (value: Course) => {
     return {
       key: `${value?.id || Math.random()}`,
@@ -148,6 +191,7 @@ const CoursePage = () => {
       status: value?.status,
       create: value?.createDate || 0,
       idCategory: value?.idCategory,
+      idTag: value?.idTag,
       value: value
     }
   }
@@ -233,7 +277,17 @@ const CoursePage = () => {
       key: "idCategory",
       render: (idCategory: string) => (
         <>
-            {categorys.map((o) =>(o.id === idCategory ? o.name : ""))}
+            {categorys.map((o) =>(o.id === idCategory ? o.name : undefined))}
+        </>
+      ),
+    },
+    {
+      title: "Tag",
+      dataIndex: "idTag",
+      key: "idTag",
+      render: (idTag: string) => (
+        <>
+            {tags.map((o) =>(o.id === idTag ? o.name : undefined))}
         </>
       ),
     },
@@ -285,38 +339,62 @@ const CoursePage = () => {
 
   return (
     <div>
-      <Button
-        type="primary"
-        style={{
-          marginBottom: "10px",
-        }}
-        onClick={showModal}
-      >
-        Thêm mới
-      </Button>
+      <Space size='large'>
+        <Button
+          type="primary"
+          onClick={showModal}
+        >
+          Thêm mới
+        </Button>
+        <Space size='small'>
+          <label style={{ marginLeft: "20px" }}>Chọn trạng thái: </label>
+          <Select
+            placeholder={'Bộ lọc'}
+            style={{ width: 150, marginLeft: "10px" }}
+            defaultValue={TTCSconfig.STATUS_PUBLIC}
+            options={status}
+            onChange={(value) => {
+              setStatusCourse(value)
+            }}
+          />
+        </Space>
 
-      <Select
-        placeholder={'Bộ lọc'}
-        style={{ width: 150, marginLeft: "20px" }}
-        defaultValue={TTCSconfig.STATUS_PUBLIC}
-        options={status}
-        onChange={(value) => {
-          setStatusCourse(value)
-        }}
-      />
+        <Space size='small'>
+          <label style={{ marginLeft: "20px" }}>Chọn danh mục: </label>
+          <Select
+              placeholder={'Bộ lọc'}
+              style={{ width: 150, marginLeft: "10px" }}
+              // defaultValue={}  
+              options={categorys.map((data) => ({
+                value: data.id,
+                label: data.name,
+              }))}
+              onChange={(value) => {
+                setIdCategorys(value)
+              }}
+              listHeight={192}
+            />
+        </Space>
 
-    <Select
-        placeholder={'Bộ lọc'}
-        style={{ width: 150, marginLeft: "20px" }}
-        // defaultValue={}
-        options={categorys.map((data) => ({
-          value: data.id,
-          label: data.name,
-        }))}
-        onChange={(value) => {
-          setIdCategorys(value)
-        }}
-      />
+        <Space size='small'>
+          <label style={{ marginLeft: "20px" }}>Chọn tag: </label>
+          <Select
+              placeholder={'Bộ lọc'}
+              style={{ width: 150, marginLeft: "10px" }}
+              // defaultValue={}  
+              options={tags.map((data) => ({
+                value: data.id,
+                label: data.name,
+              }))}
+              onChange={(value) => {
+                setIdTags(value)
+              }}
+              listHeight={192}
+            />
+        </Space>
+      </Space>
+
+      <Typography.Title level={3}>Danh sách khóa học: </Typography.Title>
 
       <Modal
         title="Tạo khóa học"
@@ -384,8 +462,33 @@ const CoursePage = () => {
                 <Input />
               </Form.Item>
 
-              <Form.Item name='idCategory' label="Danh mục cha">
+              <Form.Item 
+                name='idCategory' 
+                label="Danh mục cha" 
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập trường này!",
+                  },
+                ]}
+              >
                 <Select options={categorys.map((data) => ({
+                  value: data.id,
+                  label: data.name,
+                }))} />
+              </Form.Item>
+
+              <Form.Item 
+                name='idTag' 
+                label="Tag" 
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập trường này!",
+                  },
+                ]}
+              >
+                <Select options={tags.map((data) => ({
                   value: data.id,
                   label: data.name,
                 }))} />
