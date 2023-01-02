@@ -2,7 +2,7 @@ import { BulbOutlined } from "@ant-design/icons";
 import { lazy } from "react";
 
 const route = {
-  path: "/COURSES",
+  path: "/course",
   label: "Khóa học",
   icon: <BulbOutlined />,
   exact: true,
