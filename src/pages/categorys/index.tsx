@@ -246,7 +246,6 @@ const CategoryPage = () => {
             onChange={(value) => {
               setStatusCategory(value)
             }}
-            listHeight={20}
           />
         </Space>
       </Space>

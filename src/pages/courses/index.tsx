@@ -56,8 +56,6 @@ const CoursePage = () => {
   const categorys = categoryStates.categorys;
   const tagStates = useAppSelector(tagState);
   const tags = tagStates.tags;
-
-  console.log(tags);
   
   const status = [  
     {
@@ -82,8 +80,8 @@ const CoursePage = () => {
 
   useEffect(() => {
     if (valueEdit) {
-      const { courseName, slug, status, des, idCategory } = valueEdit
-      form.setFieldsValue({ courseName, slug, status, idCategory })
+      const { courseName, slug, status, des, idCategory, idTag } = valueEdit
+      form.setFieldsValue({ courseName, slug, status, idCategory, idTag })
       descRef?.current?.setContent(des)
     }
   }, [valueEdit])
@@ -103,8 +101,13 @@ const CoursePage = () => {
     // }else {
     //   loadCourses(statusCourse)
     // }
-    if(idTags || idCategorys) {
-      loadByIdTagAndCategory(idCategorys, idTags, statusCourse );
+    if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
+      if(idTags === -1) {
+        loadByIdTagAndCategory(idCategorys, undefined, statusCourse );
+      }else if(idCategorys === -1) {
+        loadByIdTagAndCategory(undefined, idTags, statusCourse );
+      }else 
+        loadByIdTagAndCategory(idCategorys, idTags, statusCourse );
     }else {
       loadCourses(statusCourse)
     }
@@ -214,9 +217,22 @@ const CoursePage = () => {
           console.log(data);
           
           unwrapResult(data)
-          dispatch(requestLoadCourses({
-            status: statusCourse
-          }))
+          // dispatch(requestLoadCourses({
+          //   status: statusCourse
+          // }))
+
+          if(idCategorys || idTags) {
+            dispatch(requestLoadByIdTagAndCategory({
+              idCategory: idCategorys || "",
+              idTag: idTags || "",
+              status: statusCourse
+            }))
+          }else {
+            dispatch(requestLoadCourses({
+              status: statusCourse
+            }))
+          }
+          
         } catch (error) {
           notification.error({
             message: 'cập nhật không được',
@@ -275,6 +291,7 @@ const CoursePage = () => {
       title: "Danh mục cha",
       dataIndex: "idCategory",
       key: "idCategory",
+      width: "40px",
       render: (idCategory: string) => (
         <>
             {categorys.map((o) =>(o.id === idCategory ? o.name : undefined))}
@@ -365,14 +382,20 @@ const CoursePage = () => {
               placeholder={'Bộ lọc'}
               style={{ width: 150, marginLeft: "10px" }}
               // defaultValue={}  
-              options={categorys.map((data) => ({
-                value: data.id,
-                label: data.name,
-              }))}
+              options={[
+                {
+                  value: -1,
+                  label: "Tất cả"
+                },
+                  ...categorys.map((data) => ({
+                    value: data.id,
+                    label: data.name,
+                  }))
+              ]}
               onChange={(value) => {
                 setIdCategorys(value)
               }}
-              listHeight={192}
+              listHeight={128}
             />
         </Space>
 
@@ -382,14 +405,20 @@ const CoursePage = () => {
               placeholder={'Bộ lọc'}
               style={{ width: 150, marginLeft: "10px" }}
               // defaultValue={}  
-              options={tags.map((data) => ({
-                value: data.id,
-                label: data.name,
-              }))}
+              options={[
+                {
+                  value: -1,
+                  label: "Tất cả"
+                },
+                ...tags.map((data) => ({
+                  value: data.id,
+                  label: data.name,
+                }))
+              ]}
               onChange={(value) => {
                 setIdTags(value)
               }}
-              listHeight={192}
+              listHeight={128}
             />
         </Space>
       </Space>

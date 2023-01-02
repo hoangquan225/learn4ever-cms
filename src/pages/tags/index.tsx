@@ -181,6 +181,7 @@ const TagPage = () => {
       title: "Danh mục cha",
       dataIndex: "idCategory",
       key: "idCategory",
+      width: "30%", 
       render: (idCategory: string[]) => (
         <> 
           {categorys.map((o) =>(
