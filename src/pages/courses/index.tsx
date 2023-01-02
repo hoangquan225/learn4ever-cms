@@ -1,12 +1,12 @@
-import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import styles from "./course.module.scss";
+import styles from "./courses.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
-import { courseState, requestLoadByIdTagAndCategory, requestLoadCourses, requestLoadCoursesByIdCategory, requestUpdateCourse } from "./courseSlice";
+import { courseState, requestLoadByIdTagAndCategory, requestLoadCourses, requestUpdateCourse } from "./courseSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 import TTCSconfig from "../../submodule/common/config";
 import { convertSlug } from "../../utils/slug";
@@ -49,8 +49,8 @@ const CoursePage = () => {
   const [dataUpload, setDataupload] = useState<string | null>()
   const [valueEdit, setValueEdit] = useState<Course | undefined>();
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
-  const [idCategorys, setIdCategorys] = useState();
-  const [idTags, setIdTags] = useState();
+  const [idCategorys, setIdCategorys] = useState<any>(-1);
+  const [idTags, setIdTags] = useState<any>(-1);
 
   const categoryStates = useAppSelector(categoryState);
   const categorys = categoryStates.categorys;
@@ -291,7 +291,6 @@ const CoursePage = () => {
       title: "Danh mục cha",
       dataIndex: "idCategory",
       key: "idCategory",
-      width: "40px",
       render: (idCategory: string) => (
         <>
             {categorys.map((o) =>(o.id === idCategory ? o.name : undefined))}
@@ -381,7 +380,7 @@ const CoursePage = () => {
           <Select
               placeholder={'Bộ lọc'}
               style={{ width: 150, marginLeft: "10px" }}
-              // defaultValue={}  
+              defaultValue={-1}  
               options={[
                 {
                   value: -1,
@@ -404,7 +403,7 @@ const CoursePage = () => {
           <Select
               placeholder={'Bộ lọc'}
               style={{ width: 150, marginLeft: "10px" }}
-              // defaultValue={}  
+              defaultValue={-1}  
               options={[
                 {
                   value: -1,
