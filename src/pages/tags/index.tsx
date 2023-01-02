@@ -63,9 +63,9 @@ const TagPage = () => {
     }
   }, [valueEdit])
 
-  useEffect(() => {
-    loadTags(statusTag)
-  }, [statusTag])
+  // useEffect(() => {
+  //   loadTags(statusTag)
+  // }, [statusTag])
 
   useEffect(() => {
     loadCategorys();

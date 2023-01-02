@@ -15,7 +15,8 @@ import UploadImg from "../../components/UploadImg";
 import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
 import { requestLoadTags, tagState } from "../tags/tagSlice";
-
+import { PAGE_SIZE, PAGE_SIZE_COURSE } from "../../utils/contraint";
+import {  DragDropContext, Draggable, Droppable  } from "react-beautiful-dnd";
 
 const cx = classNames.bind(styles);
 interface DataType {
@@ -194,8 +195,6 @@ const CoursePage = () => {
             des: descRef?.current?.getContent(),
             avatar: dataUpload
           }))
-          console.log(data);
-          
           unwrapResult(data)
 
           if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
@@ -507,7 +506,18 @@ const CoursePage = () => {
         </Form>
       </Modal>
 
-      <Table columns={columns} dataSource={datas} loading={loading} />
+      {/* <Draggable>
+        
+      </Draggable> */}
+      
+      <Table 
+        columns={columns}
+        dataSource={datas}
+        loading={loading} 
+        pagination={{
+          pageSize: (idCategorys !== -1 && idTags === -1 && statusCourse === 1) ? PAGE_SIZE_COURSE : PAGE_SIZE
+        }}
+      />
     </div>
   );
 };
