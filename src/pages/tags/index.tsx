@@ -60,7 +60,6 @@ const TagPage = () => {
     if (valueEdit) {
       const { name, status, idCategory } = valueEdit
       form.setFieldsValue({ name, status, idCategory })
-      // descRef?.current?.setContent(des)
     }
   }, [valueEdit])
 
@@ -87,7 +86,7 @@ const TagPage = () => {
           status: 1,
         })
       );
-      const res = unwrapResult(actionResult);
+      unwrapResult(actionResult);
     } catch (error) {
       notification.error({
         message: "không tải được danh sach danh mục",
@@ -145,13 +144,14 @@ const TagPage = () => {
           const data = await dispatch(requestUpdateTag({
             id: valueEdit?.id,
             ...value,
-            // des: descRef?.current?.getContent(),
-            // avatar: dataUpload
           }))
-          unwrapResult(data)
-          dispatch(requestLoadTags({
-            status: statusTag
-          }))
+
+          if(idCategorys && idCategorys.length) {
+            loadTagsByIdCategory(idCategorys, statusTag );
+          }else {
+            loadTags(statusTag)
+          }
+
         } catch (error) {
           notification.error({
             message: 'cập nhật không được',
@@ -166,7 +166,6 @@ const TagPage = () => {
     setIsModalOpen(false);
     form.resetFields();
     setValueEdit(undefined)
-    // descRef?.current?.setContent('')
   };
 
   const handleDelete = async (value: Tags) => {
@@ -285,15 +284,13 @@ const TagPage = () => {
           <Select
             mode="multiple" 
             placeholder={'Bộ lọc'}
-            style={{ width: 400, marginLeft: "10px" }}
+            style={{ width: 435, marginLeft: "10px" }}
             options={categorys.map((data) => ({
               value: data.id,
               label: data.name,
             }))}
                 
             onChange={(value) => {
-              console.log(value);
-              
               setIdCategorys(value)
             }}
             listHeight={128}

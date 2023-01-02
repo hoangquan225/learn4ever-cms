@@ -96,11 +96,6 @@ const CoursePage = () => {
   }, []);
 
   useEffect(() => {
-    // if(idCategorys) {
-    //   loadCoursesByIdCategory(idCategorys, statusCourse );
-    // }else {
-    //   loadCourses(statusCourse)
-    // }
     if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
       if(idTags === -1) {
         loadByIdTagAndCategory(idCategorys, undefined, statusCourse );
@@ -112,21 +107,6 @@ const CoursePage = () => {
       loadCourses(statusCourse)
     }
   }, [statusCourse, idCategorys, idTags]);
-
-
-  // const loadCoursesByIdCategory = async (idCategory: string, status: number) => {
-  //   try {
-  //     const actionResult = await dispatch(requestLoadCoursesByIdCategory({
-  //       idCategory,
-  //       status
-  //     }))
-  //     unwrapResult(actionResult)
-  //   } catch (error) {
-  //     notification.error({
-  //       message: 'không tải được danh sach danh mục'
-  //     })
-  //   }
-  // }
 
   const loadByIdTagAndCategory = async (idCategory: any, idTag: any, status: number) => {
     try {
@@ -217,22 +197,18 @@ const CoursePage = () => {
           console.log(data);
           
           unwrapResult(data)
-          // dispatch(requestLoadCourses({
-          //   status: statusCourse
-          // }))
 
-          if(idCategorys || idTags) {
-            dispatch(requestLoadByIdTagAndCategory({
-              idCategory: idCategorys || "",
-              idTag: idTags || "",
-              status: statusCourse
-            }))
+          if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
+            if(idTags === -1) {
+              loadByIdTagAndCategory(idCategorys, undefined, statusCourse );
+            }else if(idCategorys === -1) {
+              loadByIdTagAndCategory(undefined, idTags, statusCourse );
+            }else 
+              loadByIdTagAndCategory(idCategorys, idTags, statusCourse );
           }else {
-            dispatch(requestLoadCourses({
-              status: statusCourse
-            }))
+            loadCourses(statusCourse)
           }
-          
+
         } catch (error) {
           notification.error({
             message: 'cập nhật không được',
