@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Category } from '../../submodule/models/category'
-import { apiLoadCategorys, apiUpdateCategory } from '../../api/categoryApi'
+import { apiLoadCategorys, apiOrderCategory, apiUpdateCategory } from '../../api/categoryApi'
 
 // Define a type for the slice state
 interface CategoryState {
@@ -30,6 +30,17 @@ export const requestUpdateCategorys = createAsyncThunk('category/updateCategorys
   return res.data
 })
 
+export const requestOrderCategory = createAsyncThunk('category/orderCategory', async (props: {
+  indexRange : Array<{
+      id: string,
+      index: number
+  }>, 
+  status : number 
+}) => {
+  const res = await apiOrderCategory(props);
+  return res.data
+})
+
 export const categorySlice = createSlice({
   name: 'category',
   // `createSlice` will infer the state type from the `initialState` argument
@@ -38,7 +49,7 @@ export const categorySlice = createSlice({
 
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCategorys, requestUpdateCategorys];
+    const actionList = [requestLoadCategorys, requestUpdateCategorys, requestOrderCategory];
     actionList.forEach(action => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -52,6 +63,15 @@ export const categorySlice = createSlice({
 
     // load 
     builder.addCase(requestLoadCategorys.fulfilled, (state, action: PayloadAction<{
+      data: Category[],
+      status: number
+    }>) => {
+      state.loading = false;
+      state.categorys = action.payload.data.map((o) => new Category(o));
+    })
+
+    // order category
+    builder.addCase(requestOrderCategory.fulfilled, (state, action: PayloadAction<{
       data: Category[],
       status: number
     }>) => {
