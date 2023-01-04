@@ -12,7 +12,6 @@
     margin-right: 12px;
 }
 
-
 .category-item {
     width: 100%;
     align-items: center;
@@ -26,7 +25,7 @@
     }
 }
 
-.header_table {
+.header__table {
     margin-left: 40px;
     align-items: center;
     text-align: center;
@@ -37,7 +36,7 @@
     color: rgba(0, 0, 0, 0.88);
     font-weight: 600;
 }
-.header_table > div:nth-last-of-type(n+2)::before {
+.header__table > div:nth-last-of-type(n+2)::before {
     position: absolute;
     top: 50%;
     inset-inline-end: 0;

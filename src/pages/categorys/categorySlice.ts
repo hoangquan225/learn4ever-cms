@@ -43,10 +43,9 @@ export const categorySlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCategorys, requestUpdateCategorys, requestOrderCategory];
+    const actionList = [requestLoadCategorys, requestUpdateCategorys];
     actionList.forEach(action => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -68,13 +67,12 @@ export const categorySlice = createSlice({
     })
 
     // order category
-    builder.addCase(requestOrderCategory.fulfilled, (state, action: PayloadAction<{
-      data: Category[],
-      status: number
-    }>) => {
-      state.loading = false;
-      state.categorys = action.payload.data.map((o) => new Category(o));
-    })
+    // builder.addCase(requestOrderCategory.fulfilled, (state, action: PayloadAction<{
+    //   data: Category[],
+    //   status: number
+    // }>) => {
+    //   state.loading = false;
+    // })
 
     builder.addCase(requestUpdateCategorys.fulfilled, (state, action: PayloadAction<{
       data: Category,

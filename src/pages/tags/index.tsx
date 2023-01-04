@@ -151,7 +151,10 @@ const TagPage = () => {
           }else {
             loadTags(statusTag)
           }
-
+          notification.success({
+            message: 'cập nhật thành công',
+            duration: 1.5
+          })
         } catch (error) {
           notification.error({
             message: 'cập nhật không được',
@@ -178,6 +181,10 @@ const TagPage = () => {
       dispatch(requestLoadTags({
         status: statusTag
       }))
+      notification.success({
+        message: 'Xóa thành công',
+        duration: 1.5
+      })
     } catch (error) {
       notification.error({
         message: 'cập nhật không được',

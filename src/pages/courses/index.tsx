@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Col, Form, Image, Input, Modal, notification, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
@@ -16,7 +16,8 @@ import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
 import { requestLoadTags, tagState } from "../tags/tagSlice";
 import { PAGE_SIZE, PAGE_SIZE_COURSE } from "../../utils/contraint";
-import {  DragDropContext, Draggable, Droppable  } from "react-beautiful-dnd";
+import { useNavigate } from "react-router-dom";
+  
 
 const cx = classNames.bind(styles);
 interface DataType {
@@ -28,6 +29,7 @@ interface DataType {
   value: Course;
   idCategory: string | undefined;
   idTag: string | undefined;
+  avatar: string | null;
 }
 
 const normFile = (e: any) => {
@@ -41,6 +43,7 @@ const normFile = (e: any) => {
 const CoursePage = () => {
   const [form] = useForm();
   const descRef = useRef<any>();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const courseStates = useAppSelector(courseState)
   const courses = courseStates.courses;
@@ -86,10 +89,6 @@ const CoursePage = () => {
       descRef?.current?.setContent(des)
     }
   }, [valueEdit])
-
-  // useEffect(() => {
-  //   loadCourses(statusCourse)
-  // }, [statusCourse])
   
   useEffect(() => {
     loadCategorys();
@@ -176,6 +175,7 @@ const CoursePage = () => {
       create: value?.createDate || 0,
       idCategory: value?.idCategory,
       idTag: value?.idTag,
+      avatar: value?.avatar,
       value: value
     }
   }
@@ -197,6 +197,10 @@ const CoursePage = () => {
           }))
           unwrapResult(data)
 
+          notification.success({
+            message: "Cập nhật thành công",
+            duration: 1.5,
+          })
           if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
             if(idTags === -1) {
               loadByIdTagAndCategory(idCategorys, undefined, statusCourse );
@@ -232,9 +236,13 @@ const CoursePage = () => {
         status: TTCSconfig.STATUS_DELETED
       }))
       unwrapResult(data)
-      dispatch(requestLoadCategorys({
+      dispatch(requestLoadCourses({
         status: statusCourse
       }))
+      notification.success({
+        message: "Xoá thành công",
+        duration: 1.5,
+      })
     } catch (error) {
       notification.error({
         message: 'cập nhật không được',
@@ -255,6 +263,22 @@ const CoursePage = () => {
       dataIndex: "courseName",
       key: "courseName",
       render: (text) => <a>{text}</a>,
+    },
+    {
+      title: "Ảnh",
+      dataIndex: "avatar",
+      key: "avatar",
+      render: (text) => (
+        <Image
+          src={text}
+          width={150}
+          preview={false}
+          style={{
+            maxHeight: "80px",
+            overflow: "hidden",
+          }}
+        />
+      ),
     },
     {
       title: "Đường dẫn",
@@ -286,6 +310,7 @@ const CoursePage = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
+      align: "center",
       render: (text: number) => (
         <>
           <Tag color={text === TTCSconfig.STATUS_PUBLIC ? 'green' : 'red'}>
@@ -293,11 +318,12 @@ const CoursePage = () => {
           </Tag>
         </>
       ),
-    },
+    },  
     {
       title: "Hành động",
       key: "action",
       dataIndex: "value",
+      align: "center",
       render: (text: Course, record) => (
         <Space size="middle">
           <Tooltip placement="top" title="Chỉnh sửa">
@@ -309,25 +335,28 @@ const CoursePage = () => {
             </Button>
           </Tooltip>
 
-          <Popconfirm
-            title="Bạn có chắc bạn muốn xóa mục này không?"
-            onConfirm={() => {
-              handleDelete(text)
-            }}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Tooltip placement="top" title="Xóa">
-              <Button>
-                <DeleteOutlined />
-              </Button>
-            </Tooltip>
-          </Popconfirm>
+          {statusCourse !== TTCSconfig.STATUS_DELETED ? 
+            <Popconfirm
+              placement="topRight"
+              title="Bạn có chắc bạn muốn xóa mục này không?"
+              onConfirm={() => {
+                handleDelete(text)
+              }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Tooltip placement="top" title="Xóa">
+                <Button>
+                  <DeleteOutlined />
+                </Button>
+              </Tooltip>
+            </Popconfirm>: <></>}
         </Space>
       ),
     },
   ];
 
+  
   return (
     <div>
       <Space size='large'>
@@ -505,18 +534,23 @@ const CoursePage = () => {
           </Row>
         </Form>
       </Modal>
-
-      {/* <Draggable>
-        
-      </Draggable> */}
       
       <Table 
+        className={cx("course__table")}
         columns={columns}
         dataSource={datas}
         loading={loading} 
         pagination={{
           pageSize: (idCategorys !== -1 && idTags === -1 && statusCourse === 1) ? PAGE_SIZE_COURSE : PAGE_SIZE
         }}
+        onRow={(record, rowIndex) => {
+          return {
+            onDoubleClick: (event) => {
+              navigate(`chi-tiet-khoa-hoc/${record.value.id}`)
+            },
+          };
+        }}
+        
       />
     </div>
   );
