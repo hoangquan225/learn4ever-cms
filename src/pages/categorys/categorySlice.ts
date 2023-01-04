@@ -31,10 +31,7 @@ export const requestUpdateCategorys = createAsyncThunk('category/updateCategorys
 })
 
 export const requestOrderCategory = createAsyncThunk('category/orderCategory', async (props: {
-  indexRange : Array<{
-      id: string,
-      index: number
-  }>, 
+  indexRange :any, 
   status : number 
 }) => {
   const res = await apiOrderCategory(props);

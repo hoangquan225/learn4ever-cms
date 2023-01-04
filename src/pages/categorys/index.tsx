@@ -15,7 +15,7 @@ import TinymceEditor from "../../components/TinymceEditor";
 import UploadImg from "../../components/UploadImg";
 import { PAGE_SIZE } from "../../utils/contraint";
 import { DragDropContext, Draggable, Droppable, DropResult, ResponderProvided } from "react-beautiful-dnd";
-import { apiUpdateCategory } from "../../api/categoryApi";
+import { apiOrderCategory, apiUpdateCategory } from "../../api/categoryApi";
 
 
 const cx = classNames.bind(styles);
@@ -176,72 +176,31 @@ const CategoryPage = () => {
   //  */
   const handleDropEndCategory = async (result: DropResult, provided: ResponderProvided) => {
     const srcIndex = result.source.index;
-
-    console.log(srcIndex);
     const destIndex = result.destination?.index;
     
-    
-    if (typeof srcIndex !== "undefined"
-        && typeof destIndex !== "undefined"
-        ) {
+    if (typeof srcIndex !== "undefined" && typeof destIndex !== "undefined") {
       const newCourses = srcIndex < destIndex
         ? [...categoryList.slice(0, srcIndex), ...categoryList.slice(srcIndex + 1, destIndex + 1), categoryList[srcIndex], ...categoryList.slice(destIndex + 1)]
         : (srcIndex > destIndex
           ? [...categoryList.slice(0, destIndex), categoryList[srcIndex], ...categoryList.slice(destIndex, srcIndex), ...categoryList.slice(srcIndex + 1)]
           : categoryList);
           
-        console.log(newCourses);
-        const a = (newCourses.map((e, i) => {
-         return {
-            id: e.id,
-            index: i,
-            name: e.name,
-            status: e.status,
-            avatar: e.avatar ,
-            des: e.des,
-            slug: e.slug
-          }
-        }));
-        console.log(a);
-          
-        (newCourses.map((e, i) => {
-          apiUpdateCategory({
-            id: e.id,
-            name: e.name,
-            index: i,
-            status: e.status,
-            avatar: e.avatar ,
-            des: e.des,
-            slug: e.slug
-          })
-        }));
+      const dataIndex = newCourses.map((e, i) =>({
+        id: e.id,
+        index: i,
+      }));
+
+      console.log(statusCategory);
+      
+      const res = await dispatch(requestOrderCategory({
+        indexRange: dataIndex,
+        status: statusCategory
+      }))
+      unwrapResult(res)
 
       dispatch(requestLoadCategorys({
         status: statusCategory
       }))
-
-      // try {
-      //   const res = await dispatch(requestOrderCategory({
-      //     indexRange : [
-      //       {
-      //         id : ,
-      //         index : srcIndex + 1
-      //       },
-      //       {
-      //           id : ,
-      //           index : srcIndex
-      //       }
-      //   ],
-      //   status : 1
-      //   }))
-      //   unwrapResult(res)
-      //   dispatch(requestLoadCategorys({
-      //     status: statusCategory
-      //   }))
-      // } catch (error) {
-        
-      // }
-     
     }
   }
 
