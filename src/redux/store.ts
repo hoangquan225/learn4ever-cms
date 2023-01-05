@@ -1,9 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "../pages/categorys/categorySlice";
+import categoryReducer from "../pages/categorys/categorySlice";
+import tagReducer from "../pages/tags/tagSlice";
+import courseReducer from "../pages/courses/courseSlice";
 
 export const store = configureStore({
     reducer: {
-        counter: counterReducer,
+        category: categoryReducer,
+        tag: tagReducer,
+        course: courseReducer,
     },
     middleware: (getDefaultMiddle) => getDefaultMiddle({ serializableCheck: false }),
 });

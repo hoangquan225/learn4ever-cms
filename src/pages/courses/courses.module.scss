@@ -1,0 +1,18 @@
+.avatar__upload > div > span > div{
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.avatar__upload > div > span {
+    padding: 0 !important   ;
+}
+
+.avatar__upload > div > span > div > p:first-child{
+    margin-right: 12px;
+}
+
+.course__table tbody > tr:hover{
+    box-shadow: 1px 1px 10px 1px rgba($color: #000000, $alpha: 0.2);
+    cursor: pointer;
+}
