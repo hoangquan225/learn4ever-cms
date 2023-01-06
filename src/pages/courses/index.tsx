@@ -428,6 +428,24 @@ const CoursePage = () => {
 
       <Typography.Title level={3}>Danh sách khóa học: </Typography.Title>
 
+      <Table 
+        className={cx("course__table")}
+        columns={columns}
+        dataSource={datas}
+        loading={loading} 
+        pagination={{
+          pageSize: (idCategorys !== -1 && idTags === -1 && statusCourse === 1) ? PAGE_SIZE_COURSE : PAGE_SIZE
+        }}
+        onRow={(record, rowIndex) => {
+          return {
+            onDoubleClick: (event) => {
+              navigate(`chi-tiet-khoa-hoc/${record.value.id}`)
+            },
+          };
+        }}
+        
+      />
+
       <Modal
         title="Tạo khóa học"
         open={isModalOpen}
@@ -534,24 +552,6 @@ const CoursePage = () => {
           </Row>
         </Form>
       </Modal>
-      
-      <Table 
-        className={cx("course__table")}
-        columns={columns}
-        dataSource={datas}
-        loading={loading} 
-        pagination={{
-          pageSize: (idCategorys !== -1 && idTags === -1 && statusCourse === 1) ? PAGE_SIZE_COURSE : PAGE_SIZE
-        }}
-        onRow={(record, rowIndex) => {
-          return {
-            onDoubleClick: (event) => {
-              navigate(`chi-tiet-khoa-hoc/${record.value.id}`)
-            },
-          };
-        }}
-        
-      />
     </div>
   );
 };
