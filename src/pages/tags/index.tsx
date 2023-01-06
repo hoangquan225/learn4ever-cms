@@ -47,11 +47,6 @@ const TagPage = () => {
     }
   ]
 
-  
-  useEffect(() => {
-    loadTags(TTCSconfig.STATUS_PUBLIC)
-  }, [])
-
   useEffect(() => {
     setDatas(tags?.map(o => convertDataToTable(o)))
   }, [tags])
@@ -62,10 +57,6 @@ const TagPage = () => {
       form.setFieldsValue({ name, status, idCategory })
     }
   }, [valueEdit])
-
-  // useEffect(() => {
-  //   loadTags(statusTag)
-  // }, [statusTag])
 
   useEffect(() => {
     loadCategorys();
@@ -264,6 +255,7 @@ const TagPage = () => {
       ),
     },
   ];
+  
   return (
     <div>
       <Space size='large'>

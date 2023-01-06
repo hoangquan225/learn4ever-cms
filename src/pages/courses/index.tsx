@@ -15,10 +15,9 @@ import UploadImg from "../../components/UploadImg";
 import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
 import { requestLoadTags, tagState } from "../tags/tagSlice";
-import { PAGE_SIZE, PAGE_SIZE_COURSE } from "../../utils/contraint";
+import { PAGE_SIZE, PAGE_SIZE_COURSE, STATUSES } from "../../utils/contraint";
 import { useNavigate } from "react-router-dom";
   
-
 const cx = classNames.bind(styles);
 interface DataType {
   key: string;
@@ -55,29 +54,13 @@ const CoursePage = () => {
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
   const [idCategorys, setIdCategorys] = useState<any>(-1);
   const [idTags, setIdTags] = useState<any>(-1);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const categoryStates = useAppSelector(categoryState);
   const categorys = categoryStates.categorys;
   const tagStates = useAppSelector(tagState);
   const tags = tagStates.tags;
   
-  const status = [  
-    {
-      value: TTCSconfig.STATUS_PUBLIC,
-      label: 'công khai'
-    }, {
-      value: TTCSconfig.STATUS_PRIVATE,
-      label: 'riêng tư'
-    }, {
-      value: TTCSconfig.STATUS_DELETED,
-      label: 'đã xóa'
-    }
-  ]
-
-  useEffect(() => {
-    loadCourses(TTCSconfig.STATUS_PUBLIC)
-  }, [])
-
   useEffect(() => {
     setDatas(courses?.map(o => convertDataToTable(o)))
   }, [courses])
@@ -180,10 +163,12 @@ const CoursePage = () => {
     }
   }
 
-  const showModal = () => {
+  const openCreateModal = () => {
     setIsModalOpen(true);
-    setValueEdit(undefined)
+    setValueEdit(undefined);
+    setIsEdit(false);
   };
+
 
   const handleOk = () => {
     form.validateFields()
@@ -314,7 +299,7 @@ const CoursePage = () => {
       render: (text: number) => (
         <>
           <Tag color={text === TTCSconfig.STATUS_PUBLIC ? 'green' : 'red'}>
-            {status.find(o => o.value === text)?.label}
+            {STATUSES.find(o => o.value === text)?.label}
           </Tag>
         </>
       ),
@@ -330,6 +315,7 @@ const CoursePage = () => {
             <Button onClick={() => {
               setIsModalOpen(true)
               setValueEdit(text)
+              setIsEdit(true);
             }}>
               <EditOutlined />
             </Button>
@@ -362,7 +348,7 @@ const CoursePage = () => {
       <Space size='large'>
         <Button
           type="primary"
-          onClick={showModal}
+          onClick={openCreateModal}
         >
           Thêm mới
         </Button>
@@ -372,7 +358,7 @@ const CoursePage = () => {
             placeholder={'Bộ lọc'}
             style={{ width: 150, marginLeft: "10px" }}
             defaultValue={TTCSconfig.STATUS_PUBLIC}
-            options={status}
+            options={STATUSES}
             onChange={(value) => {
               setStatusCourse(value)
             }}
@@ -429,11 +415,11 @@ const CoursePage = () => {
       <Typography.Title level={3}>Danh sách khóa học: </Typography.Title>
 
       <Modal
-        title="Tạo khóa học"
+        title={`${isEdit ? "Chỉnh sửa" : "Tạo"}  khóa học`}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText="Lưu"
+        okText={`${isEdit ? "Cập nhật" : "Tạo"}`}
         cancelText="Hủy"
         width='90%'
         style={{top:20}}
@@ -451,15 +437,13 @@ const CoursePage = () => {
             <Col xl={16} md={16} xs={24} style={{ borderRight: "0.1px solid #ccc" }}>
               <Form.Item label="Mô tả">
                 <TinymceEditor
-                  id="descriptionCategory"
-                  key="descriptionCategory"
+                  id="descriptionCourse"
+                  key="descriptionCourse"
                   editorRef={descRef}
                   value={valueEdit?.des ?? ''}
                   heightEditor="500px"
                 />
               </Form.Item>
-
-
             </Col>
             <Col xl={8} md={8} xs={24}>
               <Form.Item label={<h3>{'Ảnh khóa học'}</h3>} name="avatar">
@@ -527,7 +511,7 @@ const CoursePage = () => {
               </Form.Item>
 
               <Form.Item name='status' label="Trạng thái">
-                <Select options={status} />
+                <Select options={STATUSES} />
               </Form.Item>
             </Col>
             
