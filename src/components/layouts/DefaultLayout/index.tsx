@@ -1,7 +1,7 @@
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import routes from "../../../pages/routes";
 import classNames from "classnames/bind";
 import styles from "./style.module.scss";
@@ -44,6 +44,10 @@ const LayoutDefault = ({ children }: { children?: any }) => {
       if (current !== location.pathname) {
         setCurrent(location.pathname);
       }
+    }
+    const path = location.pathname.split('/')
+    if(path[1] === "course" && path[2] === "chi-tiet-khoa-hoc") {
+      setCollapsed(true)
     }
   }, [location, current]);
 

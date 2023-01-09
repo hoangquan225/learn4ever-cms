@@ -12,31 +12,22 @@ export const apiLoadTopics = async (payload: {
     })
 }
 
-export const apiLoadTopicsByIdCourse = async (payload: {
-    type: number,
-    idCourse: string
-}) => {
-    return ApiConfig(ENDPONTAPI.GET_TOPICS_BY_ID_COURSE, {
-        params: {
-            idCourse: payload?.idCourse,
-            type: payload?.type,
-        }
-    })
-}
-
-
-export const apiLoadTopicsByParentId = async (payload: {
-    parentId: string
-}) => {
-    return ApiConfig(ENDPONTAPI.GET_TOPICS_BY_PARENT_ID, {
-        params: {
-            parentId: payload?.parentId,
-        }
-    })
-}
-
 export const apiUpdateTopic = async (payload: Topic) => {
     return ApiConfig(ENDPONTAPI.UPDATE_CATEGORY, {
         payload
+    })
+}
+
+export const apiGetTopicsByCourse = async (payload: {
+    idCourse: string[],
+    type: number,
+    parentId?: string,
+}) => {
+    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_COURSE, {
+        params: {
+            idCourse: payload?.idCourse,
+            type: payload?.type,
+            parentId: payload?.parentId
+        }
     })
 }
