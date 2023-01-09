@@ -146,6 +146,7 @@ const CategoryPage = () => {
         const data = await dispatch(
           requestUpdateCategorys({
             id: valueEdit?.id,
+            ...valueEdit,
             ...value,
             des: descRef?.current?.getContent(),
             avatar: dataUpload,
@@ -211,36 +212,22 @@ const CategoryPage = () => {
     const srcIndex = result.source.index;
     const destIndex = result.destination?.index;
 
-    if (typeof srcIndex !== "undefined" && typeof destIndex !== "undefined") {
-      const newCourses = srcIndex < destIndex
-          ? [
-              ...categoryList.slice(0, srcIndex),
-              ...categoryList.slice(srcIndex + 1, destIndex + 1),
-              categoryList[srcIndex],
-              ...categoryList.slice(destIndex + 1),
-            ]
-          : srcIndex > destIndex
-          ? [
-              ...categoryList.slice(0, destIndex),
-              categoryList[srcIndex],
-              ...categoryList.slice(destIndex, srcIndex),
-              ...categoryList.slice(srcIndex + 1),
-            ]
-          : categoryList;
+    const destination = result.destination;
+    const source = result.source;
+    let dataSource = categoryList[source.index];
+    categoryList.splice(source.index, 1);
+    categoryList.splice(destination?.index || 0, 0, dataSource)
 
-      const dataIndex = newCourses.map((e, i) => ({
-        id: e.id || "",
-        index: i,
-      }));
+    const dataIndex = categoryList.map((e, i) => ({
+      id: e.id || "",
+      index: i + 1,
+    }));
 
-      setCategoryList(newCourses);
-
-      const res = await dispatch(
-        requestOrderCategory({
-          indexRange: dataIndex,
-          status: statusCategory,
-        })
-      );
+    try {
+      const res = await dispatch(requestOrderCategory({
+        indexRange: dataIndex,
+        status: statusCategory
+      }))
       unwrapResult(res);
 
       await dispatch(
@@ -248,6 +235,11 @@ const CategoryPage = () => {
           status: statusCategory,
         })
       );
+    } catch (error) {
+      notification.error({
+        message: "Lỗi server",
+        duration: 1.5
+      })
     }
   };
 

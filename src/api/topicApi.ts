@@ -31,3 +31,16 @@ export const apiGetTopicsByCourse = async (payload: {
         }
     })
 }
+
+
+export const apiOrderTopic = async (payload: {
+    indexRange : Array<{
+        id: string,
+        index: number
+    }>, 
+}) => {
+    return ApiConfig(ENDPONTAPI.ORDER_TOPIC, {
+        payload
+    })
+}
+

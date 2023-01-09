@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useParams } from "react-router-dom";
-import { apiGetTopicsByCourse } from "../../api/topicApi";
+import { apiGetTopicsByCourse, apiOrderTopic } from "../../api/topicApi";
 import TTCSconfig from "../../submodule/common/config";
 import styles from "./courseDetail.module.scss";
 import classNames from "classnames/bind";
@@ -26,6 +26,7 @@ import {
 import TinymceEditor from "../../components/TinymceEditor";
 import { STATUSES } from "../../utils/contraint";
 import { Topic } from "../../submodule/models/topic";
+import _ from "lodash"
 
 const cx = classNames.bind(styles);
 
@@ -57,12 +58,13 @@ const items: MenuProps["items"] = [
 
 const CourseDetail = () => {
   const params = useParams();
-  const [datas, setDatas] = useState<any[]>([]);
+  const [dataTopicParent, setDataTopicParent] = useState<any[]>([]);
   const [type, setType] = useState<number>(1);
   const [dataTopicChild, setDataTopicChild] = useState<Topic[]>([]);
   const [indexOpenTopic, setIndexOpenTopic] = useState<number[]>([]);
 
-  console.log(indexOpenTopic);
+  const [dataTopicParentList, setdataTopicParentList] = useState<Topic[]>([])
+
 
   useEffect(() => {
     console.log(params.slug);
@@ -70,6 +72,16 @@ const CourseDetail = () => {
     loadTopicsByCourse(params.slug, type);
   }, [params.slug, type]);
 
+  useEffect(() => {
+    const sortTopics = _.sortBy(dataTopicParent, [(o) => {
+      return o.index
+    }], ['esc'])
+    console.log(sortTopics);
+    setdataTopicParentList(sortTopics);
+  }, [dataTopicParent]);
+
+  console.log(dataTopicParentList);
+  
   const loadTopicsByCourse = async (
     idCourse: string[],
     type: number,
@@ -81,7 +93,8 @@ const CourseDetail = () => {
         type,
         parentId,
       });
-      setDatas(res.data.data);
+      
+      setDataTopicParent(res.data.data.map((o: any[]) => new Topic(o)));
     } catch (error) {
       notification.error({
         message: "không tải được danh sach danh mục",
@@ -108,9 +121,32 @@ const CourseDetail = () => {
     }
   };
 
-  console.log(dataTopicChild);
 
-  const handleDrapEnd = () => {};
+const handleDrapEnd = async (result: any) => {
+  const destination = result.destination;
+  const source = result.source;
+  let dataSource = dataTopicParentList[source.index];
+  dataTopicParentList.splice(source.index, 1);
+  dataTopicParentList.splice(destination.index, 0, dataSource)
+  
+  const dataIndex = dataTopicParentList.map((e, i) => ({
+    id: e.id || "",
+    index: i + 1,
+  }));
+  console.log(dataTopicParentList);
+  console.log(dataIndex);
+  
+
+  // try {
+  //   const res = await apiOrderTopic({indexRange: dataIndex})
+  //   loadTopicsByCourse(params.slug, type)
+  // } catch (error) {
+  //   notification.error({
+  //     message: "lỗi server",
+  //     duration: 1.5
+  //   })
+  // }
+};
 
   return (
     <div>
@@ -130,7 +166,7 @@ const CourseDetail = () => {
       </Row>
 
       <Row gutter={24}>
-        {/* <Col span={6}>
+        <Col span={6}>
           <Row style={{borderBottom: "1px solid #cdcdcd", padding: "20px 0", alignItems: "center  "}}>
             <Col span={4} style={{textAlign:"center"}}><FolderOutlined /></Col>
             <Col span={16}>
@@ -141,29 +177,37 @@ const CourseDetail = () => {
                 fontSize: "18px"
                 }}
               >
-                Course Name
+                Toán - 1
               </div>
             </Col>
             <Col span={4}>
-              <button className={cx("dropDown__button")}></button>
+              <Dropdown
+                  menu={{ items }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <a onClick={(e) => e.preventDefault()}>
+                    <button className={cx("dropDown__button")}></button>
+                  </a>
+                </Dropdown>
             </Col>
           </Row>
           
           <Row>
             <div style={{ height: '80vh', overflow: 'auto', width: "100%"}}>
               <DragDropContext onDragEnd={handleDrapEnd}>
-                <Droppable droppableId="list">
+                <Droppable droppableId="listTopic">
                   {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                       >
-                        {datas.length
-                        ? datas.map((e, i) => {
+                        {dataTopicParentList?.length
+                        ? dataTopicParentList?.map((e, i) => {
                           return (
                             <Draggable
-                              key={e?._id}
-                              draggableId={e?._id || ""}
+                              key={e?.id}
+                              draggableId={e?.id || ""}
                               index={i}
                             >
                               {(provided, snapshot) => (
@@ -173,7 +217,7 @@ const CourseDetail = () => {
                                   {...provided.dragHandleProps}
                                 >
                                   <div
-                                    id={e?._id}
+                                    id={e?.id}
                                     key={i}
                                     style={{
                                       display: "flex",
@@ -219,9 +263,9 @@ const CourseDetail = () => {
               </DragDropContext>
             </div>
           </Row>
-        </Col> */}
+        </Col>
 
-        <Col span={6}>
+        {/* <Col span={6}>
           <Row
             style={{
               borderBottom: "1px solid #cdcdcd",
@@ -258,8 +302,8 @@ const CourseDetail = () => {
           </Row>
 
           <div style={{ height: "80vh", overflow: "auto", width: "100%" }}>
-            {datas.length ? (
-              datas.map((o, i) => (
+            {dataTopicParent.length ? (
+              dataTopicParent.map((o, i) => (
                 <>
                   <Row
                     style={{
@@ -342,7 +386,7 @@ const CourseDetail = () => {
               <></>
             )}
           </div>
-        </Col>
+        </Col> */}
 
         <Col span={18} style={{ backgroundColor: "#f7f7f7" }}>
           <Form
