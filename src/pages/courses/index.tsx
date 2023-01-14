@@ -14,9 +14,11 @@ import TinymceEditor from "../../components/TinymceEditor";
 import UploadImg from "../../components/UploadImg";
 import { Course } from "../../submodule/models/course";
 import { categoryState, requestLoadCategorys } from "../categorys/categorySlice";
-import { requestLoadTags, tagState } from "../tags/tagSlice";
+import { requestLoadTags, requestLoadTagsByIdCategory, tagState } from "../tags/tagSlice";
 import { PAGE_SIZE, PAGE_SIZE_COURSE, STATUSES } from "../../utils/contraint";
 import { useNavigate } from "react-router-dom";
+import { apiLoadTagsByIdCategory } from "../../api/tagApi";
+import { Tag as Tags} from "../../submodule/models/tag";
   
 const cx = classNames.bind(styles);
 interface DataType {
@@ -53,8 +55,11 @@ const CoursePage = () => {
   const [valueEdit, setValueEdit] = useState<Course | undefined>();
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
   const [idCategorys, setIdCategorys] = useState<any>(-1);
+  const [idCategorysModal, setIdCategorysModal] = useState();
   const [idTags, setIdTags] = useState<any>(-1);
   const [isEdit, setIsEdit] = useState<boolean>(false);
+
+  const [dataTagsModal, setDataTagsModal] = useState<Tags[]>([]);
 
   const categoryStates = useAppSelector(categoryState);
   const categorys = categoryStates.categorys;
@@ -77,6 +82,10 @@ const CoursePage = () => {
     loadCategorys();
     loadTags();
   }, []);
+
+  useEffect(() => {
+    loadTagsByIdCategory(idCategorysModal);
+  }, [idCategorysModal]);
 
   useEffect(() => {
     if((idTags || idCategorys) && !(idTags === -1 && idCategorys === -1)) {
@@ -142,6 +151,27 @@ const CoursePage = () => {
         })
       );
       const res = unwrapResult(actionResult);
+    } catch (error) {
+      notification.error({
+        message: "không tải được danh sach danh mục",
+      });
+    }
+  };
+
+  const loadTagsByIdCategory = async (idCategory :any) => {
+    try {
+      // const actionResult = await dispatch(
+      //   requestLoadTagsByIdCategory({
+      //     idCategory,
+      //     status: 1,
+      //   })
+      // );
+      // const res = unwrapResult(actionResult);
+      const res = await apiLoadTagsByIdCategory({
+        idCategory,
+        status: 1,
+      })
+      setDataTagsModal(res.data.data.map((o: any[]) => new Tags(o)))
     } catch (error) {
       notification.error({
         message: "không tải được danh sach danh mục",
@@ -277,7 +307,7 @@ const CoursePage = () => {
       key: "idCategory",
       render: (idCategory: string) => (
         <>
-            {categorys.map((o) =>(o.id === idCategory ? o.name : undefined))}
+            {categorys?.map((o) =>(o.id === idCategory ? o.name : undefined))}
         </>
       ),
     },
@@ -287,7 +317,7 @@ const CoursePage = () => {
       key: "idTag",
       render: (idTag: string) => (
         <>
-            {tags.map((o) =>(o.id === idTag ? o.name : undefined))}
+            {tags?.map((o) =>(o.id === idTag ? o.name : undefined))}
         </>
       ),
     },
@@ -506,10 +536,15 @@ const CoursePage = () => {
                   },
                 ]}
               >
-                <Select options={categorys.map((data) => ({
-                  value: data.id,
-                  label: data.name,
-                }))} />
+                <Select options={categorys?.map((data) => ({
+                    value: data.id,
+                    label: data.name,
+                  }))} 
+                  onChange={(value) => {
+                    setIdCategorysModal(value)
+                  }}
+                  listHeight={128}
+                />
               </Form.Item>
 
               <Form.Item 
@@ -522,7 +557,7 @@ const CoursePage = () => {
                   },
                 ]}
               >
-                <Select options={tags.map((data) => ({
+                <Select options={dataTagsModal?.map((data) => ({
                   value: data.id,
                   label: data.name,
                 }))} />

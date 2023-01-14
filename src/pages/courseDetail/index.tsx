@@ -97,7 +97,7 @@ const CourseDetail = () => {
       setDataTopicParent(res.data.data.map((o: any[]) => new Topic(o)));
     } catch (error) {
       notification.error({
-        message: "không tải được danh sach danh mục",
+        message: "không tải được danh sách topic",
       });
     }
   };
@@ -113,10 +113,10 @@ const CourseDetail = () => {
         type,
         parentId,
       });
-      setDataTopicChild(res.data.data);
+      setDataTopicChild(res.data.data.map((o: any[]) => new Topic(o)));
     } catch (error) {
       notification.error({
-        message: "không tải được danh sach danh mục",
+        message: "không tải được danh sách topic",
       });
     }
   };
@@ -135,17 +135,16 @@ const handleDrapEnd = async (result: any) => {
   }));
   console.log(dataTopicParentList);
   console.log(dataIndex);
-  
 
-  // try {
-  //   const res = await apiOrderTopic({indexRange: dataIndex})
-  //   loadTopicsByCourse(params.slug, type)
-  // } catch (error) {
-  //   notification.error({
-  //     message: "lỗi server",
-  //     duration: 1.5
-  //   })
-  // }
+  try {
+    const res = await apiOrderTopic({indexRange: dataIndex})
+    loadTopicsByCourse(params.slug, type)
+  } catch (error) {
+    notification.error({
+      message: "lỗi server",
+      duration: 1.5
+    })
+  }
 };
 
   return (

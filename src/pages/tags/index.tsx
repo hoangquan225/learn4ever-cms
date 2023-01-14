@@ -93,7 +93,7 @@ const TagPage = () => {
       unwrapResult(actionResult)
     } catch (error) {
       notification.error({
-        message: 'không tải được danh sach danh mục'
+        message: 'không tải được danh sách tag'
       })
     }
   }
@@ -107,7 +107,7 @@ const TagPage = () => {
       unwrapResult(actionResult)
     } catch (error) {
       notification.error({
-        message: 'không tải được danh sach danh mục'
+        message: 'không tải được danh sách tag'
       })
     }
   }
