@@ -55,10 +55,9 @@ const CoursePage = () => {
   const [valueEdit, setValueEdit] = useState<Course | undefined>();
   const [statusCourse, setStatusCourse] = useState<number>(TTCSconfig.STATUS_PUBLIC);
   const [idCategorys, setIdCategorys] = useState<any>(-1);
-  const [idCategorysModal, setIdCategorysModal] = useState();
+  const [idCategorysModal, setIdCategorysModal] = useState<string | undefined>();
   const [idTags, setIdTags] = useState<any>(-1);
   const [isEdit, setIsEdit] = useState<boolean>(false);
-
   const [dataTagsModal, setDataTagsModal] = useState<Tags[]>([]);
 
   const categoryStates = useAppSelector(categoryState);
@@ -344,6 +343,7 @@ const CoursePage = () => {
           <Tooltip placement="top" title="Chỉnh sửa">
             <Button onClick={() => {
               setIsModalOpen(true)
+              setIdCategorysModal(text?.idCategory)
               setValueEdit(text)
               setIsEdit(true);
             }}>
