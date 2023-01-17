@@ -18,18 +18,12 @@ export const apiUpdateTopic = async (payload: Topic) => {
     })
 }
 
-export const apiGetTopicsByCourse = async (payload: {
-    idCourse: string[],
+export const apiLoadTopicsByCourse = async (params: {
+    idCourse: string,
     type: number,
     parentId?: string,
 }) => {
-    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_COURSE, {
-        params: {
-            idCourse: payload?.idCourse,
-            type: payload?.type,
-            parentId: payload?.parentId
-        }
-    })
+    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_COURSE, { params })
 }
 
 
