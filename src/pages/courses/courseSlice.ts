@@ -67,7 +67,7 @@ export const courseSlice = createSlice({
       status: number
     }>) => {
       state.loading = false;
-      state.courses = action.payload.data.map((o) => new Course(o));
+      state.courses = action.payload.data?.map((o) => new Course(o));
     })
     // load by id category
     builder.addCase(requestLoadCoursesByIdCategory.fulfilled, (state, action: PayloadAction<{
@@ -75,7 +75,7 @@ export const courseSlice = createSlice({
       status: number
     }>) => {
       state.loading = false;
-      state.courses = action.payload.data.map((o) => new Course(o));
+      state.courses = action.payload.data?.map((o) => new Course(o));
     })
     
     // load by id category
@@ -84,7 +84,7 @@ export const courseSlice = createSlice({
       status: number
     }>) => {
       state.loading = false;
-      state.courses = action.payload.data.map((o) => new Course(o));
+      state.courses = action.payload.data?.map((o) => new Course(o));
     })
 
     // update

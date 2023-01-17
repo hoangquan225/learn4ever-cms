@@ -204,8 +204,8 @@ const TagPage = () => {
       width: "32%", 
       render: (idCategory: string[]) => (
         <> 
-          {categorys.map((o) =>(
-            idCategory.find((c) =>(c === o.id)) ? <Tag>{o.name}</Tag> : undefined
+          {categorys?.map((o, i) =>(
+            idCategory.find((c) =>(c === o.id)) ? <Tag key={i}>{o.name}</Tag> : undefined
           ))}
         </>
       ),
@@ -284,7 +284,7 @@ const TagPage = () => {
             mode="multiple" 
             placeholder={'Bộ lọc'}
             style={{ width: 435, marginLeft: "10px" }}
-            options={categorys.map((data) => ({
+            options={categorys?.map((data) => ({
               value: data.id,
               label: data.name,
             }))}
@@ -346,7 +346,7 @@ const TagPage = () => {
               >
                 <Select 
                   mode="multiple"
-                  options={categorys.map((data) => ({
+                  options={categorys?.map((data) => ({
                     value: data.id,
                     label: data.name,
                   }))} 

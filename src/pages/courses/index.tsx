@@ -170,7 +170,7 @@ const CoursePage = () => {
         idCategory,
         status: 1,
       })
-      setDataTagsModal(res.data.data.map((o: any[]) => new Tags(o)))
+      setDataTagsModal(res.data.data?.map((o: any[]) => new Tags(o)))
     } catch (error) {
       notification.error({
         message: "không tải được danh sach danh mục",
@@ -406,7 +406,7 @@ const CoursePage = () => {
                   value: -1,
                   label: "Tất cả"
                 },
-                  ...categorys.map((data) => ({
+                  ...categorys?.map((data) => ({
                     value: data.id,
                     label: data.name,
                   }))

@@ -218,7 +218,7 @@ const CategoryPage = () => {
     categoryList.splice(source.index, 1);
     categoryList.splice(destination?.index || 0, 0, dataSource)
 
-    const dataIndex = categoryList.map((e, i) => ({
+    const dataIndex = categoryList?.map((e, i) => ({
       id: e.id || "",
       index: i + 1,
     }));
@@ -366,8 +366,8 @@ const CategoryPage = () => {
                   <Col span={4}>Hành động</Col>
                 </Row>
 
-                {categoryList.length
-                  ? categoryList.map((e, ind) => {
+                {categoryList.length > 0 &&
+                  categoryList?.map((e, ind) => {
                         const id = e?.id;
                         const indCategory = e.index;
                         return (
@@ -478,8 +478,7 @@ const CategoryPage = () => {
                             )}
                           </Draggable>
                         );
-                      })
-                  : ""}
+                      })}
                 {provided.placeholder}
               </div>
             )}
