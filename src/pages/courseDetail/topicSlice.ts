@@ -9,6 +9,7 @@ interface TopicState {
   loading: boolean;
   error: string;
   topics: Topic[];
+  dataTopic: Topic | null;
 }
 
 // Define the initial state using that type
@@ -16,6 +17,7 @@ const initialState: TopicState = {
   loading: false,
   error: "",
   topics: [],
+  dataTopic: null
 };
 
 export const requestLoadTopicByCourse = createAsyncThunk(
@@ -30,7 +32,11 @@ export const topicSlice = createSlice({
   name: "topic",
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
-  reducers: {},
+  reducers: {
+    setDataTopic: (state, action) => {
+      state.dataTopic = action.payload
+    }
+  },
   extraReducers: (builder) => {
     const actionList = [requestLoadTopicByCourse];
     actionList.forEach((action) => {
@@ -62,7 +68,7 @@ export const topicSlice = createSlice({
   },
 });
 
-export const {} = topicSlice.actions;
+export const { setDataTopic } = topicSlice.actions;
 
 // Other code such as selectors can use the imported `RootState` type
 export const topicState = (state: RootState) => state.topic;
