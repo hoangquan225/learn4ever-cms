@@ -7,6 +7,7 @@ import {
   Col,
   Collapse,
   Dropdown, MenuProps,
+  message,
   notification,
   Row,
   Select,
@@ -23,7 +24,7 @@ import TTCSconfig from "../../submodule/common/config";
 import { Topic } from "../../submodule/models/topic";
 import styles from "./courseDetail.module.scss";
 import { LessonCourse } from "./FCLessonDetail";
-import { requestLoadTopicByCourse, setDataTopic, topicState } from "./topicSlice";
+import { requestLoadTopicByCourse, requestLoadTopicById, setDataTopic, topicState } from "./topicSlice";
 
 const cx = classNames.bind(styles);
 
@@ -307,10 +308,15 @@ const CourseDetail = () => {
                                                     cursor: "pointer",
                                                     backgroundColor: indexActiveDataChild === `${i}:${index}` ? '#caf0ff' : ''
                                                   }}
-                                                  onClick={() => {
+                                                  onClick={async () => {
                                                     setIndexActive(undefined)
                                                     setIndexActiveDataChild(`${i}:${index}`)
-                                                    dispatch(setDataTopic(topicChild))
+                                                    try {
+                                                      const requestResult = await dispatch(requestLoadTopicById({id : topicChild?.id || ''}))
+                                                      unwrapResult(requestResult)
+                                                    } catch (error) {
+                                                      message.error('không load được, lỗi server')
+                                                    }
                                                   }}
                                                 >
                                                   <Col span={4} style={{ marginLeft: "8px" }}>

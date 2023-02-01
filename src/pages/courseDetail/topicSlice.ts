@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../redux/store";
 import { Topic } from "../../submodule/models/topic";
-import { apiLoadTopicsByCourse } from "../../api/topicApi";
+import { apiLoadTopicById, apiLoadTopicsByCourse, apiUpdateTopic } from "../../api/topicApi";
 
 // Define a type for the slice state
 interface TopicState {
@@ -28,6 +28,21 @@ export const requestLoadTopicByCourse = createAsyncThunk(
   }
 );
 
+export const requestLoadTopicById = createAsyncThunk(
+  "topic/requestLoadTopicById",
+  async (props: { id: string }) => {
+    const res = await apiLoadTopicById(props);
+    return res.data;
+  }
+);
+
+export const requestUpdateTopic = createAsyncThunk(
+  "topic/requestUpdateTopic",
+  async (props: Topic) => {
+    const res = await apiUpdateTopic(props);
+    return res.data;
+  }
+);
 export const topicSlice = createSlice({
   name: "topic",
   // `createSlice` will infer the state type from the `initialState` argument
@@ -38,7 +53,7 @@ export const topicSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadTopicByCourse];
+    const actionList = [requestLoadTopicByCourse, requestUpdateTopic, requestLoadTopicById];
     actionList.forEach((action) => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -63,6 +78,29 @@ export const topicSlice = createSlice({
       ) => {
         state.topics = action.payload.data;
         state.loading = false;
+      }
+    );
+
+    // requestUpdateTopic 
+    builder.addCase(
+      requestUpdateTopic.fulfilled,
+      (
+        state,
+        action: PayloadAction<any>
+      ) => {
+        state.loading = false;
+      }
+    );
+
+    // requestLoadTopicById
+    builder.addCase(
+      requestLoadTopicById.fulfilled,
+      (
+        state,
+        action: PayloadAction<Topic>
+      ) => {
+        state.loading = false;
+        state.dataTopic = action.payload
       }
     );
   },

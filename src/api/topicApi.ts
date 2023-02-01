@@ -12,8 +12,18 @@ export const apiLoadTopics = async (payload: {
     })
 }
 
+export const apiLoadTopicById = async (payload: {
+    id: string
+}) => {
+    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_ID, {
+        params: {
+            id: payload?.id
+        }
+    })
+}
+
 export const apiUpdateTopic = async (payload: Topic) => {
-    return ApiConfig(ENDPONTAPI.UPDATE_CATEGORY, {
+    return ApiConfig(ENDPONTAPI.UPDATE_TOPIC, {
         payload
     })
 }

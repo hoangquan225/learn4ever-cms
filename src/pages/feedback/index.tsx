@@ -58,8 +58,10 @@ const columns: ColumnsType<DataType> = [
     key: "action",
     render: (_, record) => (
       <Space size="middle">
-        <a>Xem</a>
-        <a>Xóa</a>
+        <a>Sửa</a>
+        <a style={{
+          color : "red"
+        }}>Xóa</a>
       </Space>
     ),
   },
@@ -92,30 +94,15 @@ const data: DataType[] = [
   },
 ];
 
-const provinceData = ["Lop1", "Lop2"];
-const cityData = {
-  Lop1: ["Toan", "Van", "Anh"],
-  Lop2: ["Ly", "Hoa", "Sinh"],
-};
-
-type CityName = keyof typeof cityData;
-
 const Feedback = () => {
-  const [cities, setCities] = useState(cityData[provinceData[0] as CityName]);
-  const [secondCity, setSecondCity] = useState(
-    cityData[provinceData[0] as CityName][0]
-  );
 
-  const handleProvinceChange = (value: CityName) => {
-    setCities(cityData[value]);
-    setSecondCity(cityData[value][0]);
+  const handleProvinceChange = () => {
+
   };
 
-  const onSecondCityChange = (value: CityName) => {
-    setSecondCity(value);
-  };
+  const onSecondCityChange = () => {
 
-  // console.log(typeof provinceData[0]);
+  };
 
   return (
     <>
@@ -124,17 +111,14 @@ const Feedback = () => {
         placeholder={'Chọn danh mục'}
         style={{ width: 200, marginBottom: "20px" }}
         onChange={handleProvinceChange}
-        options={provinceData.map((province) => ({
-          label: province,
-          value: province,
-        }))}
+        options={[]}
       />
       <Select
         style={{ width: 200, marginBottom: "20px",  marginLeft: "10px"  }}
         // value={secondCity}
         placeholder={'Chọn khóa học'}
         onChange={onSecondCityChange}
-        options={cities.map((city) => ({ label: city, value: city }))}
+        options={[]}
       />
       <Table columns={columns} dataSource={data} />
     </>

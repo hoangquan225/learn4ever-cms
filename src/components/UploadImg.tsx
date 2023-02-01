@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { Modal, Upload } from "antd";
+import { message, Modal, Upload } from "antd";
 import type { RcFile, UploadProps } from "antd/es/upload";
 import type { UploadFile } from "antd/es/upload/interface";
 import { useEffect } from "react";
+import { apiUploadFile } from "../api/uploadApi";
+import ENDPONTAPI from "../submodule/common/endpoint";
 
 const getBase64 = (file: RcFile): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -36,11 +38,11 @@ const UploadImg = ({
                 }
             ])
             onChangeUrl(defaultUrl)
-        } else { 
+        } else {
             setFileList([])
             onChangeUrl('')
         }
-        
+
     }, [defaultUrl])
 
     const handleCancel = () => setPreviewOpen(false);
@@ -72,12 +74,38 @@ const UploadImg = ({
     return (
         <>
             <Upload
-                action={`https://test-toeic.online:1443/api/upload-file?baseFolder=hust-cms`}
+                customRequest={async (options) => {
+                    const { onSuccess = () => {}, onError = () => {}, file } = options;
+                    try {
+                        const res = await apiUploadFile(file)
+                        onSuccess("oke")
+                    } catch (error:any) {
+                        onError(error);
+                    }
+                    
+                }}
                 listType="picture-card"
                 fileList={fileList}
                 maxCount={1}
                 onPreview={handlePreview}
                 onChange={handleChange}
+                beforeUpload={(file) => {
+                    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+                    if (!isJpgOrPng) {
+                        message.error("You can only upload JPG/PNG file!");
+                    }
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+                    if (!isLt2M) {
+                        message.error("Image must smaller than 2MB!");
+                    }
+            
+                    if (isJpgOrPng && isLt2M) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }}
+                accept="image/*"
             >
                 {uploadButton}
             </Upload>

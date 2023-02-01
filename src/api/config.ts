@@ -10,14 +10,14 @@ axiosInstance.defaults.timeout = 20000;
 axiosInstance.defaults.headers['Content-Type'] = "application/json";
 
 export const ApiConfig = async (url: string, data?: {
-    payload ?: any, 
-    params ?: any
+    payload?: any,
+    params?: any
 }, _method = "POST", apiPrefix = PREFIX_API) => {
     const method = _method.toLowerCase() as AxiosRequestConfig["method"];
     const config: AxiosRequestConfig = {
         url,
         method,
-        data: data?.payload, 
+        data: data?.payload,
         params: data?.params
     };
     if (apiPrefix !== PREFIX_API) config.baseURL = `${ENDPOINT_LOCAL}/${apiPrefix}`;
@@ -29,4 +29,32 @@ export const ApiConfig = async (url: string, data?: {
     //         .catch(error => error);
     // }
     return axiosInstance.request(config);
+}
+
+export const ApiUploadFile = async (url: string, file: string | Blob | any, setProgress?: React.Dispatch<React.SetStateAction<number>>, onProgress?: ((event: any) => void) | undefined, fieldName = "file") => {
+    const formData = new FormData();
+    if (typeof file === 'object' && file?.length) {
+        console.log('array');
+        for (let i = 0; i < file?.length; i++) {
+            formData.append(fieldName, file[i])
+        };
+    } else {
+        console.log('not array');
+        formData.append(fieldName, file)
+    }
+    return axiosInstance.post(url, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        },
+        // onUploadProgress: (event: any) => {
+        //     const percent = Math.floor((event.loaded / event.total) * 100);
+        //     if (setProgress && onProgress) {
+        //         setProgress(percent);
+        //         // if (percent === 100) {
+        //         //     setTimeout(() => setProgress(0), 1000);
+        //         // }
+        //         onProgress({ percent: (event.loaded / event.total) * 100 });
+        //     }
+        // }, 
+    })
 }
