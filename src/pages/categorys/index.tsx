@@ -272,14 +272,14 @@ const CategoryPage = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
-      render: (text) => <p>{text}</p>,
+      render: (text) => <span>{text}</span>,
     },
     {
       title: "Đường dẫn",
       dataIndex: "slug",
       key: "slug",
       align: "center",
-      render: (text) => <p>{text}</p>,
+      render: (text) => <span>{text}</span>,
     },
     {
       title: "Trạng thái",
