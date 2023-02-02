@@ -1,8 +1,4 @@
-import {
-  BarsOutlined,
-  DeleteOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { BarsOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import {
   Avatar,
   Button,
@@ -47,7 +43,7 @@ import {
   DropResult,
   ResponderProvided,
 } from "react-beautiful-dnd";
-import _ from "lodash" ;
+import _ from "lodash";
 
 const cx = classNames.bind(styles);
 interface DataType {
@@ -67,7 +63,6 @@ const normFile = (e: any) => {
   return e?.fileList;
 };
 
-
 const CategoryPage = () => {
   const [form] = useForm();
   const descRef = useRef<any>();
@@ -84,15 +79,21 @@ const CategoryPage = () => {
   );
   const [isEdit, setIsEdit] = useState<boolean>(false);
 
-  const [categoryList, setCategoryList] = useState<Category[]>([])
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   useEffect(() => {
     setDatas(categorys?.map((o) => convertDataToTable(o)));
-      const sortCategorys = _.sortBy(categorys, [(o) => {
-        return o.index
-      }], ['esc'])
-      
-      setCategoryList(sortCategorys);
+    const sortCategorys = _.sortBy(
+      categorys,
+      [
+        (o) => {
+          return o.index;
+        },
+      ],
+      ["esc"]
+    );
+
+    setCategoryList(sortCategorys);
   }, [categorys]);
 
   useEffect(() => {
@@ -130,7 +131,7 @@ const CategoryPage = () => {
       status: value?.status,
       create: value?.createDate || 0,
       value: value,
-      avatar: value?.avatar 
+      avatar: value?.avatar,
     };
   };
 
@@ -196,7 +197,7 @@ const CategoryPage = () => {
       notification.success({
         message: "Xoá thành công",
         duration: 1.5,
-      })
+      });
     } catch (error) {
       notification.error({
         message: "cập nhật không được",
@@ -209,14 +210,11 @@ const CategoryPage = () => {
     result: DropResult,
     provided: ResponderProvided
   ) => {
-    const srcIndex = result.source.index;
-    const destIndex = result.destination?.index;
-
     const destination = result.destination;
     const source = result.source;
     let dataSource = categoryList[source.index];
     categoryList.splice(source.index, 1);
-    categoryList.splice(destination?.index || 0, 0, dataSource)
+    categoryList.splice(destination?.index || 0, 0, dataSource);
 
     const dataIndex = categoryList?.map((e, i) => ({
       id: e.id || "",
@@ -224,10 +222,12 @@ const CategoryPage = () => {
     }));
 
     try {
-      const res = await dispatch(requestOrderCategory({
-        indexRange: dataIndex,
-        status: statusCategory
-      }))
+      const res = await dispatch(
+        requestOrderCategory({
+          indexRange: dataIndex,
+          status: statusCategory,
+        })
+      );
       unwrapResult(res);
 
       await dispatch(
@@ -238,8 +238,8 @@ const CategoryPage = () => {
     } catch (error) {
       notification.error({
         message: "Lỗi server",
-        duration: 1.5
-      })
+        duration: 1.5,
+      });
     }
   };
 
@@ -251,15 +251,10 @@ const CategoryPage = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Tên danh mục",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <a>{text}</a>,
-    },
-    {
       title: "Ảnh",
       dataIndex: "avatar",
       key: "avatar",
+      align: "center",
       render: (text) => (
         <Image
           src={text}
@@ -273,15 +268,24 @@ const CategoryPage = () => {
       ),
     },
     {
+      title: "Tên danh mục",
+      dataIndex: "name",
+      key: "name",
+      align: "center",
+      render: (text) => <p>{text}</p>,
+    },
+    {
       title: "Đường dẫn",
       dataIndex: "slug",
       key: "slug",
-      render: (text) => <a>{text}</a>,
+      align: "center",
+      render: (text) => <p>{text}</p>,
     },
     {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
+      align: "center",
       render: (text: number) => (
         <>
           <Tag color={text === TTCSconfig.STATUS_PUBLIC ? "green" : "red"}>
@@ -308,7 +312,7 @@ const CategoryPage = () => {
               <EditOutlined />
             </Button>
           </Tooltip>
-          {statusCategory !== TTCSconfig.STATUS_DELETED ? 
+          {statusCategory !== TTCSconfig.STATUS_DELETED && (
             <Popconfirm
               placement="topRight"
               title="Bạn có chắc bạn muốn xóa mục này không?"
@@ -323,7 +327,8 @@ const CategoryPage = () => {
                   <DeleteOutlined />
                 </Button>
               </Tooltip>
-            </Popconfirm>: <></>}
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -360,7 +365,7 @@ const CategoryPage = () => {
                 <Row className={cx("header__table")}>
                   <Col span={2}>STT</Col>
                   <Col span={6}>Ảnh</Col>
-                  <Col span={4}>Tên khóa học</Col>
+                  <Col span={4}>Tên danh mục</Col>
                   <Col span={4}>Đường dẫn</Col>
                   <Col span={4}>Trạng thái</Col>
                   <Col span={4}>Hành động</Col>
@@ -368,117 +373,112 @@ const CategoryPage = () => {
 
                 {categoryList.length > 0 &&
                   categoryList?.map((e, ind) => {
-                        const id = e?.id;
-                        const indCategory = e.index;
-                        return (
-                          <Draggable
-                            key={e.id}
-                            draggableId={e?.id || ""}
-                            index={ind}
+                    const id = e?.id;
+                    return (
+                      <Draggable
+                        key={e.id}
+                        draggableId={e?.id || ""}
+                        index={ind}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
                           >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <div
-                                  id={id}
-                                  key={ind}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <BarsOutlined
+                            <div
+                              id={id}
+                              key={ind}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <BarsOutlined
+                                style={{
+                                  fontSize: "32px",
+                                  marginRight: "8px",
+                                }}
+                              />
+                              <Row className={cx("category-item")}>
+                                <Col span={2}>
+                                  <Avatar
                                     style={{
-                                      fontSize: "32px",
-                                      marginRight: "8px",
+                                      fontWeight: "bold",
+                                      background: "#1990ff",
+                                      marginLeft: "8px",
+                                    }}
+                                    size="large"
+                                  >
+                                    {ind + 1}
+                                  </Avatar>
+                                </Col>
+                                <Col span={6}>
+                                  <Image
+                                    src={e.avatar ?? ""}
+                                    width={150}
+                                    preview={false}
+                                    style={{
+                                      maxHeight: "80px",
+                                      overflow: "hidden",
                                     }}
                                   />
-                                  <Row className={cx("category-item")}>
-                                    <Col span={2}>
-                                      <Avatar
-                                        style={{
-                                          fontWeight: "bold",
-                                          background: "#1990ff",
-                                          marginLeft: "8px",
+                                </Col>
+                                <Col span={4}>{e.name}</Col>
+                                <Col span={4}>{e.slug}</Col>
+                                <Col span={4}>
+                                  <Tag
+                                    color={
+                                      e.status === TTCSconfig.STATUS_PUBLIC
+                                        ? "green"
+                                        : "red"
+                                    }
+                                  >
+                                    {
+                                      STATUSES.find((o) => o.value === e.status)
+                                        ?.label
+                                    }
+                                  </Tag>
+                                </Col>
+                                <Col span={4}>
+                                  <Row style={{ justifyContent: "center" }}>
+                                    <Tooltip placement="top" title="Chỉnh sửa">
+                                      <Button
+                                        style={{ marginRight: 8 }}
+                                        onClick={() => {
+                                          setIsModalOpen(true);
+                                          setValueEdit(e);
+                                          setIsEdit(true);
                                         }}
-                                        size="large"
                                       >
-                                        {ind + 1}
-                                      </Avatar>
-                                    </Col>
-                                    <Col span={6}>
-                                      <Image
-                                        src={e.avatar ?? ""}
-                                        width={150}
-                                        preview={false}
-                                        style={{
-                                          maxHeight: "80px",
-                                          overflow: "hidden",
-                                        }}
-                                      />
-                                    </Col>
-                                    <Col span={4}>{e.name}</Col>
-                                    <Col span={4}>{e.slug}</Col>
-                                    <Col span={4}>
-                                      <Tag
-                                        color={
-                                          e.status === TTCSconfig.STATUS_PUBLIC
-                                            ? "green"
-                                            : "red"
-                                        }
-                                      >
-                                        {
-                                          STATUSES.find(
-                                            (o) => o.value === e.status
-                                          )?.label
-                                        }
-                                      </Tag>
-                                    </Col>
-                                    <Col span={4}>
-                                      <Row style={{ justifyContent: "center" }}>
-                                        <Tooltip
-                                          placement="top"
-                                          title="Chỉnh sửa"
-                                        >
-                                          <Button
-                                            style={{ marginRight: 8 }}
-                                            onClick={() => {
-                                              setIsModalOpen(true);
-                                              setValueEdit(e);
-                                              setIsEdit(true);
-                                            }}
-                                          >
-                                            <EditOutlined />
-                                          </Button>
-                                        </Tooltip>
+                                        <EditOutlined />
+                                      </Button>
+                                    </Tooltip>
 
-                                        <Popconfirm
-                                          placement="topRight"
-                                          title="Bạn có chắc bạn muốn xóa mục này không?"
-                                          cancelText="KHÔNG"
-                                          okText="CÓ"
-                                          onConfirm={() => {
-                                            handleDelete(e);
-                                          }}
-                                        >
-                                          <Tooltip placement="top" title="Xóa">
-                                            <Button>
-                                              <DeleteOutlined />
-                                            </Button>
-                                          </Tooltip>
-                                        </Popconfirm>
-                                      </Row>
-                                    </Col>
+                                    <Popconfirm
+                                      placement="topRight"
+                                      title="Bạn có chắc bạn muốn xóa mục này không?"
+                                      cancelText="KHÔNG"
+                                      okText="CÓ"
+                                      onConfirm={() => {
+                                        handleDelete(e);
+                                      }}
+                                    >
+                                      <Tooltip placement="top" title="Xóa">
+                                        <Button>
+                                          <DeleteOutlined />
+                                        </Button>
+                                      </Tooltip>
+                                    </Popconfirm>
                                   </Row>
-                                </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        );
-                      })}
+                                </Col>
+                              </Row>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
                 {provided.placeholder}
               </div>
             )}
