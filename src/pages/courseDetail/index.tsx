@@ -28,32 +28,6 @@ import { requestLoadTopicByCourse, requestLoadTopicById, setDataTopic, topicStat
 
 const cx = classNames.bind(styles);
 
-const statusTopic = [
-  {
-    value: 1,
-    label: "Chương trình học",
-  },
-  {
-    value: 2,
-    label: "Đề kiểm tra",
-  },
-];
-
-const items: MenuProps["items"] = [
-  {
-    label: "Tạo chương học",
-    key: "0",
-  },
-  {
-    label: "Tạo tiết học",
-    key: "1",
-  },
-  {
-    label: "Tạo bài tập",
-    key: "2",
-  },
-];
-
 const CourseDetail = () => {
   const dispatch = useAppDispatch();
   const params = useParams();
@@ -63,6 +37,36 @@ const CourseDetail = () => {
   const [activeTopic, setActiveTopic] = useState<string | string[]>([]);
   const [indexActive, setIndexActive] = useState<number>();
   const [indexActiveDataChild, setIndexActiveDataChild] = useState<string>();
+  const [isMenu, setIsMenu] = useState<boolean>(false);
+
+  const statusTopic = [
+    {
+      value: 1,
+      label: "Chương trình học",
+    },
+    {
+      value: 2,
+      label: "Đề kiểm tra",
+    },
+  ];
+  
+  const items: MenuProps["items"] = [
+    {
+      label: "Tạo chương học",
+      key: "0",
+      disabled: isMenu
+    },
+    {
+      label: "Tạo tiết học",
+      key: "1",
+      disabled: !isMenu
+    },
+    {
+      label: "Tạo bài tập",
+      key: "2",
+      disabled: !isMenu
+    },
+  ];
 
   useEffect(() => {
     // call api get topic by id
@@ -192,7 +196,10 @@ const CourseDetail = () => {
                 trigger={["click"]}
                 placement="bottomRight"
               >
-                <a onClick={(e) => e.preventDefault()}>
+                <a onClick={(e) => { 
+                  setIsMenu(false) 
+                  return e.preventDefault()
+                }}>
                   <button className={cx("dropDown__button")}></button>
                 </a>
               </Dropdown>
@@ -262,7 +269,10 @@ const CourseDetail = () => {
                                                 trigger={['click']}
                                                 placement="bottomRight"
                                               >
-                                                <a onClick={(e) => e.preventDefault()}>
+                                                <a onClick={(e) => { 
+                                                  setIsMenu(true) 
+                                                  return e.preventDefault()
+                                                }}>
                                                   <button className={cx("dropDown__button")}></button>
                                                 </a>
                                               </Dropdown>
