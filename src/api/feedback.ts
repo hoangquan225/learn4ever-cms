@@ -14,3 +14,14 @@ export const apiLoadFeedbackByIdCourse = async (payload: {
         }
     })
 }
+
+export const apiLoadFeedbackByIdTypeOrCourse = async (payload: {
+    type?: string[], idCourse?: string
+}) => {
+    return ApiConfig(ENDPONTAPI.GET_FEEDBACKS_BY_TYPE_OR_COURSE, {
+        params: {
+            type: payload?.type,
+            idCourse: payload?.idCourse
+        }
+    })
+}

@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Course } from '../../submodule/models/course'
-import { apiLoadByIdTagAndCategory, apiLoadCourses, apiLoadCoursesByIdCategory, apiUpdateCourse } from '../../api/courseApi'
+import { apiLoadByIdTagAndCategory, apiLoadCourses, apiUpdateCourse } from '../../api/courseApi'
 
 // Define a type for the slice state
 interface CourseState {
@@ -25,12 +25,7 @@ export const requestLoadCourses = createAsyncThunk('course/loadCourses', async (
   return res.data
 })
 
-export const requestLoadCoursesByIdCategory = createAsyncThunk('course/loadCoursesByIdCategory', async (props: {idCategory:string, status: number }) => {
-  const res = await apiLoadCoursesByIdCategory(props);
-  return res.data
-})
-
-export const requestLoadByIdTagAndCategory = createAsyncThunk('course/loadByIdTagAndCategory', async (props: {idCategory:string, idTag:string, status: number }) => {
+export const requestLoadByIdTagAndCategory = createAsyncThunk('course/loadByIdTagAndCategory', async (props: {idCategory?:string, idTag?:string, status: number }) => {
   const res = await apiLoadByIdTagAndCategory(props);
   return res.data
 })
@@ -49,7 +44,7 @@ export const courseSlice = createSlice({
 
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadCoursesByIdCategory, requestLoadByIdTagAndCategory];
+    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadByIdTagAndCategory];
     actionList.forEach(action => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -63,14 +58,6 @@ export const courseSlice = createSlice({
 
     // load 
     builder.addCase(requestLoadCourses.fulfilled, (state, action: PayloadAction<{
-      data: Course[],
-      status: number
-    }>) => {
-      state.loading = false;
-      state.courses = action.payload.data?.map((o) => new Course(o));
-    })
-    // load by id category
-    builder.addCase(requestLoadCoursesByIdCategory.fulfilled, (state, action: PayloadAction<{
       data: Course[],
       status: number
     }>) => {
