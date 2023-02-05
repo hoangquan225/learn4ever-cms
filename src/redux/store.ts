@@ -4,6 +4,7 @@ import tagReducer from "../pages/tags/tagSlice";
 import courseReducer from "../pages/courses/courseSlice";
 import topicReducer from "../pages/courseDetail/topicSlice";
 import lessonReducer from "./lessonSlice";
+import feedbackReducer from "../pages/feedback/feedbackSlice";
 
 export const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
         tag: tagReducer,
         course: courseReducer,
         topic: topicReducer, 
-        lesson: lessonReducer
+        lesson: lessonReducer, 
+        feedback: feedbackReducer
     },
     middleware: (getDefaultMiddle) => getDefaultMiddle({ serializableCheck: false }),
 });

@@ -43,6 +43,9 @@ export const categorySlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
+    setCategoryInfo : (state, action) => {
+      state.categoryInfo = action.payload
+    }
   },
   extraReducers: (builder) => {
     const actionList = [requestLoadCategorys, requestUpdateCategorys];
@@ -84,7 +87,7 @@ export const categorySlice = createSlice({
   }
 })
 
-export const { } = categorySlice.actions
+export const { setCategoryInfo } = categorySlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const categoryState = (state: RootState) => state.category

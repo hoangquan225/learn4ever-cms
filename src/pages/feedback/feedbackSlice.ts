@@ -1,0 +1,85 @@
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit'
+import type { RootState } from '../../redux/store'
+import { Feedback } from '../../submodule/models/feedback'
+import { apiLoadFeedbackByIdCourse, apiLoadFeedbacks } from '../../api/feedback'
+
+interface FeedbackState {
+    feedbacks: Feedback[],
+    loading: boolean,
+    error: string,
+    feedbackInfo: Feedback | null, 
+    count: number
+}
+
+const initialState: FeedbackState = {
+    feedbacks: [],
+    loading: false,
+    error: '',
+    feedbackInfo: null,
+    count : 0
+}
+
+export const requestLoadFeedbacks = createAsyncThunk('feedback/requestLoadFeedbacks', async () => {
+    const res = await apiLoadFeedbacks();
+    return res.data
+})
+
+export const requestLoadFeedbacksByIdCourse = createAsyncThunk('feedback/requestLoadFeedbacksByIdCourse', async (props: {
+    idCourse: string
+}) => {
+    const res = await apiLoadFeedbackByIdCourse(props);
+    return res.data
+})
+
+export const feedbackSlice = createSlice({
+    name: 'feedback',
+    initialState,
+    reducers: {
+        setFeedbackInfo : (state, action) => {
+            state.feedbackInfo = action.payload
+        }
+    },
+    extraReducers: (builder) => {
+        const actionList = [requestLoadFeedbacks, requestLoadFeedbacksByIdCourse];
+        actionList.forEach(action => {
+            builder.addCase(action.pending, (state) => {
+                state.loading = true;
+            })
+        })
+        actionList.forEach(action => {
+            builder.addCase(action.rejected, (state) => {
+                state.loading = false;
+            })
+        })
+
+        // load 
+        builder.addCase(requestLoadFeedbacks.fulfilled, (state, action: PayloadAction<{
+            data: Feedback[],
+            status: number,
+            count: number
+        }>) => {
+            state.loading = false;
+            state.feedbacks = action.payload.data;
+            state.count = action.payload.count
+        })
+
+        // load by id course
+        builder.addCase(requestLoadFeedbacksByIdCourse.fulfilled, (state, action: PayloadAction<{
+            data: Feedback[],
+            status: number,
+            count: number
+        }>) => {
+            state.loading = false;
+            state.feedbacks = action.payload.data;
+            state.count = action.payload.count
+        })
+    }
+})
+
+export const { setFeedbackInfo } = feedbackSlice.actions
+
+// Other code such as selectors can use the imported `RootState` type
+export const feedbackState = (state: RootState) => state.feedback
+
+export default feedbackSlice.reducer
