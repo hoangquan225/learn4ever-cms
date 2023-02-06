@@ -35,7 +35,7 @@ export const requestLoadCoursesByIdCategory = createAsyncThunk('course/loadCours
   return res.data
 })
 
-export const requestLoadByIdTagAndCategory = createAsyncThunk('course/loadByIdTagAndCategory', async (props: {idCategory:string, idTag:string, status: number }) => {
+export const requestLoadByIdTagAndCategory = createAsyncThunk('course/loadByIdTagAndCategory', async (props: {idCategory:string, idTag:string, status?: number }) => {
   const res = await apiLoadByIdTagAndCategory(props);
   return res.data
 })
