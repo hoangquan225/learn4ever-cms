@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Feedback } from '../../submodule/models/feedback'
-import { apiLoadFeedbackByIdCourse, apiLoadFeedbacks } from '../../api/feedback'
+import { apiLoadFeedbackByIdCourse, apiLoadFeedbackByIdTypeOrCourse, apiLoadFeedbacks } from '../../api/feedback'
 
 interface FeedbackState {
     feedbacks: Feedback[],
@@ -32,6 +32,15 @@ export const requestLoadFeedbacksByIdCourse = createAsyncThunk('feedback/request
     return res.data
 })
 
+
+export const requestLoadFeedbacksByTypeOrCourse = createAsyncThunk('feedback/requestLoadFeedbacksByTypeOrCourse', async (props: {
+    type?: string[], idCourse?: string
+}) => {
+    const res = await apiLoadFeedbackByIdTypeOrCourse(props);
+    return res.data
+})
+
+
 export const feedbackSlice = createSlice({
     name: 'feedback',
     initialState,
@@ -41,7 +50,7 @@ export const feedbackSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        const actionList = [requestLoadFeedbacks, requestLoadFeedbacksByIdCourse];
+        const actionList = [requestLoadFeedbacks, requestLoadFeedbacksByIdCourse, requestLoadFeedbacksByTypeOrCourse];
         actionList.forEach(action => {
             builder.addCase(action.pending, (state) => {
                 state.loading = true;
@@ -66,6 +75,17 @@ export const feedbackSlice = createSlice({
 
         // load by id course
         builder.addCase(requestLoadFeedbacksByIdCourse.fulfilled, (state, action: PayloadAction<{
+            data: Feedback[],
+            status: number,
+            count: number
+        }>) => {
+            state.loading = false;
+            state.feedbacks = action.payload.data;
+            state.count = action.payload.count
+        })
+
+        // load by id type
+        builder.addCase(requestLoadFeedbacksByTypeOrCourse.fulfilled, (state, action: PayloadAction<{
             data: Feedback[],
             status: number,
             count: number

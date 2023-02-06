@@ -35,8 +35,8 @@ export const apiLoadCoursesByIdCategory = async (payload: {
 }
 
 export const apiLoadByIdTagAndCategory = async (payload: {
-    idCategory: string,
-    idTag: string,
+    idCategory?: string,
+    idTag?: string,
     status: number
 }) => {
     return ApiConfig(ENDPONTAPI.GET_COURSES_BY_ID_TAG_AND_CATEGORY, {

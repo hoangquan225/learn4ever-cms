@@ -1,0 +1,145 @@
+@mixin responsive($breakpoint) {
+  @if $breakpoint== xs {
+    @media (max-width: 575.98px) {
+      @content;
+    }
+  }
+
+  @if $breakpoint== sm {
+    @media (min-width: 576px) and (max-width: 767.98px) {
+      @content;
+    }
+  }
+
+  @if $breakpoint== md {
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      @content;
+    }
+  }
+
+  @if $breakpoint== lg {
+    @media (min-width: 992px) and (max-width: 1199.98px) {
+      @content;
+    }
+  }
+
+  @if $breakpoint== xl {
+    @media (min-width: 1200px) {
+      @content;
+    }
+  }
+}
+
+.login__over {
+  outline: 0px;
+  display: flex;
+  -webkit-box-pack: center;
+  justify-content: space-around;
+  -webkit-box-align: center;
+  align-items: center;
+}
+
+.login__wrapper {
+  position: absolute;
+  top: 4.8rem;
+  width: 40%;
+  max-width: 60rem;
+  border-radius: 1rem;
+  background-color: rgb(255, 255, 255);
+  color: rgba(0, 0, 0, 0.87);
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  box-shadow: rgb(0 0 0 / 20%) 0px 11px 15px -7px,
+    rgb(0 0 0 / 14%) 0px 24px 38px 3px, rgb(0 0 0 / 12%) 0px 9px 46px 8px;
+  margin: 3.2rem;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  max-height: calc(100% - 6.4rem);
+  padding: 1.6rem;
+
+  @include responsive(xs) {
+    max-width: 90%;
+  }
+}
+
+.login__title {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 2.4rem;
+  padding: 1rem;
+  flex: 0 0 auto;
+}
+
+.login__form {
+  max-width: 70%;
+  min-width: 70%;
+
+  @include responsive(xs) {
+    max-width: 95%;
+    min-width: 95%;
+  }
+
+  @include responsive(sm) {
+    max-width: 75%;
+    min-width: 75%;
+  }
+}
+
+.login-form-forgot {
+  float: right;
+  color: var(--primaryColor);
+}
+
+.ant-col-rtl .login-form-forgot {
+  float: left;
+}
+
+.login-form-button {
+  width: 35%;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 0.8rem;
+  padding: 1.2rem;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login__or {
+  padding: 1.6rem 2rem;
+  color: #898989;
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin: 0px;
+  flex-shrink: 0;
+  display: flex;
+  white-space: nowrap;
+  text-align: center;
+  border: 0px;
+
+  &::after,
+  &::before {
+    position: relative;
+    width: 100%;
+    border-top: thin solid rgba(0, 0, 0, 0.12);
+    top: 50%;
+    content: "";
+    transform: translateY(50%);
+  }
+}
+
+.login__ortext {
+  margin: 0 1rem;
+  display: inline-block;
+}
+
+.login__toregister {
+  text-align: center;
+}
+
+.login__toregisterlink {
+  cursor: pointer;
+  color: rgb(26, 218, 195);
+}
