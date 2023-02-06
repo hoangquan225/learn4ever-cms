@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../redux/store'
 import { Course } from '../../submodule/models/course'
-import { apiLoadByIdTagAndCategory, apiLoadCourses, apiLoadCoursesByIdCategory, apiUpdateCourse } from '../../api/courseApi'
+import { apiLoadByIdTagAndCategory, apiLoadCourseById, apiLoadCourses, apiLoadCoursesByIdCategory, apiUpdateCourse } from '../../api/courseApi'
 
 // Define a type for the slice state
 interface CourseState {
@@ -22,6 +22,11 @@ const initialState: CourseState = {
 
 export const requestLoadCourses = createAsyncThunk('course/loadCourses', async (props: { status: number }) => {
   const res = await apiLoadCourses(props);
+  return res.data
+})
+
+export const requestLoadCourseById = createAsyncThunk('course/requestLoadCourseById', async (props: { id: string }) => {
+  const res = await apiLoadCourseById(props);
   return res.data
 })
 
@@ -46,10 +51,12 @@ export const courseSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-
+    setCourseInfo: (state, action) => {
+      state.courseInfo = action.payload
+    }
   },
   extraReducers: (builder) => {
-    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadCoursesByIdCategory, requestLoadByIdTagAndCategory];
+    const actionList = [requestLoadCourses, requestUpdateCourse, requestLoadCoursesByIdCategory, requestLoadByIdTagAndCategory, requestLoadCourseById];
     actionList.forEach(action => {
       builder.addCase(action.pending, (state) => {
         state.loading = true;
@@ -69,6 +76,17 @@ export const courseSlice = createSlice({
       state.loading = false;
       state.courses = action.payload.data?.map((o) => new Course(o));
     })
+    
+    // load bby id 
+    builder.addCase(requestLoadCourseById.fulfilled, (state, action: PayloadAction<{
+      data: any,
+      status: number
+    }>) => {
+      state.loading = false;
+      state.courseInfo = new Course(action.payload.data)
+    })
+    
+
     // load by id category
     builder.addCase(requestLoadCoursesByIdCategory.fulfilled, (state, action: PayloadAction<{
       data: Course[],
@@ -98,7 +116,7 @@ export const courseSlice = createSlice({
   }
 })
 
-export const { } = courseSlice.actions
+export const { setCourseInfo } = courseSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const courseState = (state: RootState) => state.course

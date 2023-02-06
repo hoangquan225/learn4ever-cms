@@ -50,7 +50,7 @@ export const topicSlice = createSlice({
   reducers: {
     setDataTopic: (state, action) => {
       state.dataTopic = action.payload
-    }
+    }, 
   },
   extraReducers: (builder) => {
     const actionList = [requestLoadTopicByCourse, requestUpdateTopic, requestLoadTopicById];
@@ -100,7 +100,7 @@ export const topicSlice = createSlice({
         action: PayloadAction<Topic>
       ) => {
         state.loading = false;
-        state.dataTopic = action.payload
+        state.dataTopic = new Topic(action.payload)
       }
     );
   },

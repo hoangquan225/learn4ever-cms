@@ -1,6 +1,9 @@
 import {
   CaretRightOutlined, FileOutlined,
-  FolderOutlined
+  FolderOutlined,
+  LaptopOutlined,
+  ReadOutlined,
+  YoutubeOutlined
 } from "@ant-design/icons";
 import { unwrapResult } from "@reduxjs/toolkit";
 import {
@@ -14,14 +17,16 @@ import {
   Space
 } from "antd";
 import classNames from "classnames/bind";
+import { unwatchFile } from "fs";
 import _ from "lodash";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useParams } from "react-router-dom";
 import { apiOrderTopic } from "../../api/topicApi";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import TTCSconfig from "../../submodule/common/config";
 import { Topic } from "../../submodule/models/topic";
+import { courseState, requestLoadCourseById } from "../courses/courseSlice";
 import styles from "./courseDetail.module.scss";
 import { LessonCourse } from "./FCLessonDetail";
 import { requestLoadTopicByCourse, requestLoadTopicById, setDataTopic, topicState } from "./topicSlice";
@@ -32,12 +37,15 @@ const CourseDetail = () => {
   const dispatch = useAppDispatch();
   const params = useParams();
   const topicStates = useAppSelector(topicState);
+  const courseStates = useAppSelector(courseState)
   const [type, setType] = useState<number>(1);
   const [topicParentList, setTopicParentList] = useState<Topic[]>([]);
   const [activeTopic, setActiveTopic] = useState<string | string[]>([]);
   const [indexActive, setIndexActive] = useState<number>();
   const [indexActiveDataChild, setIndexActiveDataChild] = useState<string>();
-  const [isMenu, setIsMenu] = useState<boolean>(false);
+  const [isOpenEdit, setIsOpenEdit] = useState<boolean>(false)
+  const topicParent = useRef<any>()
+
 
   const statusTopic = [
     {
@@ -49,29 +57,30 @@ const CourseDetail = () => {
       label: "Đề kiểm tra",
     },
   ];
-  
+
   const items: MenuProps["items"] = [
     {
       label: "Tạo chương học",
       key: "0",
-      disabled: isMenu
     },
     {
       label: "Tạo tiết học",
       key: "1",
-      disabled: !isMenu
     },
     {
       label: "Tạo bài tập",
       key: "2",
-      disabled: !isMenu
     },
   ];
 
   useEffect(() => {
+    loadCourseById(params.slug || '')
+  }, [])
+
+  useEffect(() => {
     // call api get topic by id
     loadTopicsByCourse(params.slug || '', type);
-    dispatch(setDataTopic(null))
+    dispatch(setDataTopic(new Topic(null)))
   }, [params.slug, type]);
 
   useEffect(() => {
@@ -83,7 +92,7 @@ const CourseDetail = () => {
     setTopicParentList(sortTopics);
   }, [topicStates.topics]);
 
-  const loadTopicsByCourse = async (
+  const loadTopicsByCourse = useCallback(async (
     idCourse: string,
     type: number,
     parentId?: string
@@ -99,7 +108,19 @@ const CourseDetail = () => {
         duration: 1.5,
       });
     }
-  };
+  }, []);
+
+  const loadCourseById = async (params: string) => {
+    try {
+      const res = await dispatch(requestLoadCourseById({ id: params }))
+      unwrapResult(res)
+    } catch (error) {
+      notification.error({
+        message: "server error!!",
+        duration: 1.5,
+      });
+    }
+  }
 
   const handleDrapEnd = async (result: any) => {
     const destination = result.destination;
@@ -133,7 +154,7 @@ const CourseDetail = () => {
     )
     const destination = result.destination;
     const source = result.source;
-    if(topicChild?.length) {
+    if (topicChild?.length) {
       const topicChildCopy = [...topicChild]
       const dataSource = topicChildCopy[source.index];
       topicChildCopy?.splice(source.index, 1);
@@ -155,8 +176,58 @@ const CourseDetail = () => {
         duration: 1.5,
       });
     }
-    
+
   };
+
+  const onClickDropDown = (props: { key: string, parent?: Topic, index?: number }) => {
+    const { key, parent, index } = props
+    if (key === '1') {
+      setIndexActiveDataChild(`${index}`)
+      setIndexActive(undefined)
+      dispatch(setDataTopic(new Topic({
+        type: TTCSconfig.TYPE_LESSON,
+        topicType: TTCSconfig.TYPE_TOPIC_VIDEO,
+        parentId: parent?.id,
+        idCourse: courseStates.courseInfo?.id,
+        index: (parent?.topicChildData.length || 0) + 1
+      })))
+      setIsOpenEdit(true)
+    } else if (key === '2') {
+      console.log('hello 2');
+      setIndexActiveDataChild(`${index}`)
+      setIndexActive(undefined)
+      dispatch(setDataTopic(new Topic({
+        type: TTCSconfig.TYPE_LESSON,
+        topicType: TTCSconfig.TYPE_TOPIC_PRATICE,
+        parentId: parent?.id,
+        idCourse: courseStates.courseInfo?.id,
+        index: (parent?.topicChildData.length || 0) + 1
+      })))
+      setIsOpenEdit(true)
+    } else {
+      console.log('hello 0');
+
+    }
+  };
+
+  const handleClickTopicParent = (topic: Topic, index: number) => {
+    setIndexActive(index)
+    setIndexActiveDataChild(undefined)
+    dispatch(setDataTopic(topic))
+    setIsOpenEdit(true)
+  }
+
+  const handleClickTopicChild = async (topicChild: Topic, indexActive: string) => {
+    setIndexActive(undefined)
+    setIndexActiveDataChild(indexActive)
+    setIsOpenEdit(true)
+    try {
+      const requestResult = await dispatch(requestLoadTopicById({ id: topicChild?.id || '' }))
+      unwrapResult(requestResult)
+    } catch (error) {
+      message.error('không load được, lỗi server')
+    }
+  }
 
   return (
     <div>
@@ -187,17 +258,16 @@ const CourseDetail = () => {
                 fontSize: "18px"
               }}
               >
-                Toán - 1
+                {courseStates.courseInfo?.courseName}
               </div>
             </Col>
             <Col span={4}>
               <Dropdown
-                menu={{ items }}
+                menu={{ items: items?.filter(o => o?.key === '0'), onClick: onClickDropDown }}
                 trigger={["click"]}
                 placement="bottomRight"
               >
-                <a onClick={(e) => { 
-                  setIsMenu(false) 
+                <a onClick={(e) => {
                   return e.preventDefault()
                 }}>
                   <button className={cx("dropDown__button")}></button>
@@ -257,20 +327,15 @@ const CourseDetail = () => {
                                             }}
                                           >
                                             <Col span={20}
-                                              onClick={() => {
-                                                setIndexActive(i)
-                                                setIndexActiveDataChild(undefined)
-                                                dispatch(setDataTopic(topic))
-                                              }}
+                                              onClick={() => handleClickTopicParent(topic, i)}
                                             >{topic.name}</Col>
                                             <Col span={4}>
                                               <Dropdown
-                                                menu={{ items }}
+                                                menu={{ items: items.filter(o => o?.key !== '0'), onClick: ({ key }) => onClickDropDown({ key, parent: topic, index: i }) }}
                                                 trigger={['click']}
                                                 placement="bottomRight"
                                               >
-                                                <a onClick={(e) => { 
-                                                  setIsMenu(true) 
+                                                <a onClick={(e) => {
                                                   return e.preventDefault()
                                                 }}>
                                                   <button className={cx("dropDown__button")}></button>
@@ -297,47 +362,44 @@ const CourseDetail = () => {
                                           return o.index;
                                         }], ["esc"]
                                         )
-                                        .map((topicChild, index) => (
-                                          <Draggable
-                                            key={topicChild?.id}
-                                            draggableId={topicChild?.id || ""}
-                                            index={index}
-                                          >
-                                            {(provided, snapshot) => (
-                                              <div
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                              >
-                                                <Row
-                                                  style={{
-                                                    alignItems: "center",
-                                                    padding: "10px 0",
-                                                    borderBottom: "1px solid #cdcdcd",
-                                                    marginLeft: "20px",
-                                                    cursor: "pointer",
-                                                    backgroundColor: indexActiveDataChild === `${i}:${index}` ? '#caf0ff' : ''
-                                                  }}
-                                                  onClick={async () => {
-                                                    setIndexActive(undefined)
-                                                    setIndexActiveDataChild(`${i}:${index}`)
-                                                    try {
-                                                      const requestResult = await dispatch(requestLoadTopicById({id : topicChild?.id || ''}))
-                                                      unwrapResult(requestResult)
-                                                    } catch (error) {
-                                                      message.error('không load được, lỗi server')
-                                                    }
-                                                  }}
+                                          .map((topicChild, index) => (
+                                            <Draggable
+                                              key={topicChild?.id}
+                                              draggableId={topicChild?.id || ""}
+                                              index={index}
+                                            >
+                                              {(provided, snapshot) => (
+                                                <div
+                                                  ref={provided.innerRef}
+                                                  {...provided.draggableProps}
+                                                  {...provided.dragHandleProps}
                                                 >
-                                                  <Col span={4} style={{ marginLeft: "8px" }}>
-                                                    <FileOutlined />
-                                                  </Col>
-                                                  <Col span={18}>{topicChild.name}</Col>
-                                                </Row>
-                                              </div>
-                                            )}
-                                          </Draggable>
-                                        ))
+                                                  <Row
+                                                    style={{
+                                                      alignItems: "center",
+                                                      padding: "10px 0",
+                                                      borderBottom: "1px solid #cdcdcd",
+                                                      marginLeft: "20px",
+                                                      cursor: "pointer",
+                                                      backgroundColor: indexActiveDataChild === `${i}:${index}` ? '#caf0ff' : ''
+                                                    }}
+                                                    onClick={() => handleClickTopicChild(topicChild, `${i}:${index}`)}
+                                                  >
+                                                    <Col span={4} style={{ marginLeft: "8px" }}>
+                                                      {
+                                                        topicChild.topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? (
+                                                          <YoutubeOutlined />
+                                                        ) : ( topicChild.topicType === TTCSconfig.TYPE_TOPIC_PRATICE
+                                                          ? <LaptopOutlined /> : <ReadOutlined />
+                                                        )
+                                                      }
+                                                    </Col>
+                                                    <Col span={18}>{topicChild.name}</Col>
+                                                  </Row>
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          ))
                                       }
                                     </div>
                                   )}
@@ -357,7 +419,7 @@ const CourseDetail = () => {
         </Col>
 
         <Col span={18} style={{ backgroundColor: "#f7f7f7" }}>
-          {topicStates.dataTopic && <LessonCourse />}
+          {isOpenEdit && <LessonCourse onloadTopic={loadTopicsByCourse} type={type} setIndexActiveDataChild={setIndexActiveDataChild} />}
         </Col>
       </Row >
     </div >

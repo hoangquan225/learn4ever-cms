@@ -12,6 +12,16 @@ export const apiLoadCourses = async (payload: {
     })
 }
 
+export const apiLoadCourseById = async (payload: {
+    id: string
+}) => {
+    return ApiConfig(ENDPONTAPI.GET_COURSES_BY_ID, {
+        params: {
+            id: payload?.id
+        }
+    })
+}
+
 export const apiLoadCoursesByIdCategory = async (payload: {
     idCategory: string,
     status: number

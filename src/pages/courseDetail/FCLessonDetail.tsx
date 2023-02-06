@@ -1,31 +1,45 @@
-import { ClockCircleOutlined, UploadOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { notification, Radio, Typography, UploadProps } from 'antd'
+import { Collapse, notification, Radio, Typography, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
 import moment from "moment"
-import { useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { apiUploadMultipleVideo } from "../../api/uploadApi"
 import TinymceEditor from "../../components/TinymceEditor"
 import { useAppDispatch, useAppSelector } from "../../redux/hook"
+import { questionState, requestLoadQuestionsByIdTopic } from "../../redux/question"
+import TTCSconfig from "../../submodule/common/config"
+import { Question } from "../../submodule/models/question"
+import { answers } from "../../submodule/utils/contants"
 import { STATUSES } from "../../utils/contraint"
+import { courseState } from "../courses/courseSlice"
 import styles from "./courseDetail.module.scss"
 import { requestLoadTopicById, requestUpdateTopic, topicState } from "./topicSlice"
 
 const cx = classNames.bind(styles);
 
-export const LessonCourse = () => {
+export const LessonCourse = memo((prop: {
+    onloadTopic?: (idCourse: string, type: number, parentId?: string) => Promise<void>,
+    type?: number,
+    setIndexActiveDataChild?: React.Dispatch<React.SetStateAction<string | undefined>>
+}) => {
+    const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { } } = prop
     const dispatch = useAppDispatch();
     const descRef = useRef<any>();
     const [form] = useForm();
     const topicStates = useAppSelector(topicState);
-    const isTopicParent = !topicStates.dataTopic?.parentId
+    const courseStates = useAppSelector(courseState);
+    const questionStates = useAppSelector(questionState)
+
     // const [progress, setProgress] = useState(0);
+    const isTopicParent = !topicStates.dataTopic?.parentId
     const [isUploadVideo, setIsUploadVideo] = useState<number>(1)
     const [urlVideo, setUrlVideo] = useState<string>('')
     const [urlVideoUpload, setUrlVideoUpload] = useState<string>('')
     const [keyUpload, setKeyUpload] = useState<number>(Math.random())
+    const topicType = topicStates.dataTopic?.topicType
 
     useEffect(() => {
         setIsUploadVideo(1)
@@ -40,6 +54,9 @@ export const LessonCourse = () => {
 
             setUrlVideo(topicStates.dataTopic?.video || '')
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
+        }
+        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE) {
+            handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
         }
     }, [topicStates.dataTopic])
 
@@ -102,19 +119,11 @@ export const LessonCourse = () => {
     }
 
     const handleUpdateOrCreateTopic = async (value: any) => {
-        // console.log({
-        //     ...topicStates.dataTopic,
-        //     ...value,
-        //     des: descRef?.current?.getContent(),
-        //     video: urlVideo,
-        //     updateDate: moment().valueOf()
-        // });
-
         const video = isUploadVideo === 1 ? urlVideoUpload : urlVideo
 
-        if(!video) {
+        if (!video && topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
             message.error('vui lòng upload video')
-            return 
+            return
         }
 
         try {
@@ -126,21 +135,69 @@ export const LessonCourse = () => {
                 updateDate: moment().valueOf()
             }))
             const data = unwrapResult(actionResult);
-            console.log(data);
-            
+            onloadTopic(courseStates.courseInfo?.id || '', type)
+            setIndexActiveDataChild(prev => {
+                return `${prev}:${data?.data?.index - 1}`
+            })
             message.success('cập nhật thành công')
-            data?.status === 0 && dispatch(requestLoadTopicById({id : data?.data?.id}))
+            data?.status === 0 && dispatch(requestLoadTopicById({ id: data?.data?.id }))
         } catch (error) {
             notification.error({
                 message: "không tải được danh sach danh mục",
             });
         }
-
     }
 
-    return (
-        <div>
-            <Typography.Title level={4}>Sửa bài học {topicStates.dataTopic?.name}</Typography.Title>
+    const handleLoadQuestionByIdtopic = async (idTopic: string, status: number) => {
+        try {
+            const res = await dispatch(requestLoadQuestionsByIdTopic({
+                idTopic,
+                status
+            }))
+            unwrapResult(res)
+        } catch (error) {
+            notification.error({
+                message: 'server error!!',
+                duration: 1.5
+            })
+        }
+    }
+
+    const handleChangeCollapse = async (key: string | string[]) => {
+
+    };
+
+    const itemQuestionView = (props: { question: Question }) => {
+        const { question } = props
+        return (
+            <div>
+                <div className={cx('question_number')}>Câu hỏi {question.index}</div>
+                <div style={{fontWeight: 500}}>Đề bài :</div>
+                <div dangerouslySetInnerHTML={{ __html: question.question }} />
+                <div className={cx('question_answers')}>
+                    {
+                        question.answer.map(item => {
+                            return (
+                                <p style={{
+                                    color: item.isResult ? 'red' : ''
+                                }}>{answers[item.index]}.{" "}
+                                    <div className={cx('text_answer')} dangerouslySetInnerHTML={{ __html: item.text }} />
+                                </p>
+                            )
+                        })
+                    }
+                </div>
+                <p style={{
+                    color: !question.hint ? 'rgb(250, 173, 20)' : ''
+                }}>giải thích :
+                    {question.hint ? <div dangerouslySetInnerHTML={{ __html: question.hint }} /> : ' chưa cập nhật'}
+                </p>
+            </div>
+        )
+    }
+
+    const renderInfoTopic = () => {
+        return (
             <Form
                 layout="vertical"
                 name="register"
@@ -183,7 +240,7 @@ export const LessonCourse = () => {
                             !isTopicParent && (
                                 <Form.Item
                                     name="timeExam"
-                                    label="Độ dài Video (s)"
+                                    label={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? "Độ dài Video (s)" : "Thời gian làm bài"}
                                     rules={[
                                         {
                                             required: true,
@@ -192,7 +249,7 @@ export const LessonCourse = () => {
                                     ]}
 
                                 >
-                                    <Input disabled suffix={<ClockCircleOutlined />} />
+                                    <Input disabled={topicType === TTCSconfig.TYPE_TOPIC_VIDEO} suffix={<ClockCircleOutlined />} />
                                 </Form.Item>
                             )
                         }
@@ -217,7 +274,7 @@ export const LessonCourse = () => {
                         <Form.Item label="Mô tả">
                             <TinymceEditor
                                 id="descriptionTopic"
-                                key="descriptionTopic"
+                                key={keyUpload}
                                 editorRef={descRef}
                                 value={topicStates.dataTopic?.des ?? ""}
                                 heightEditor="250px"
@@ -225,7 +282,7 @@ export const LessonCourse = () => {
                         </Form.Item>
 
                         {
-                            !isTopicParent && (
+                            !isTopicParent && topicType === TTCSconfig.TYPE_TOPIC_VIDEO && (
                                 <div>
                                     <div className={cx('video_study')}>
                                         <p className={cx("require")}>*</p>
@@ -285,6 +342,50 @@ export const LessonCourse = () => {
                     <Button type="primary" style={{ marginLeft: 10 }} htmlType="submit">LƯU</Button>
                 </div>
             </Form>
+        )
+    }
+
+    return (
+        <div>
+            <Typography.Title level={4}>
+                {
+                    topicStates.dataTopic?.id
+                        ? (topicType === TTCSconfig.TYPE_TOPIC_VIDEO
+                            ? 'Sửa bài học'
+                            : (topicType === TTCSconfig.TYPE_TOPIC_PRATICE ? 'Sửa bài tập' : 'Sửa tài liệu'))
+                        : (topicType === TTCSconfig.TYPE_TOPIC_VIDEO
+                            ? 'Tạo bài học'
+                            : (topicType === TTCSconfig.TYPE_TOPIC_PRATICE ? 'Tạo bài tập' : 'Tạo tài liệu'))
+                }
+                {` ${topicStates.dataTopic?.name}`}
+            </Typography.Title>
+            {
+                topicType === TTCSconfig.TYPE_TOPIC_PRATICE ? (
+                    <Collapse defaultActiveKey={['2']} onChange={handleChangeCollapse}>
+                        <Collapse.Panel header="Thông tin bài tập" key="1">
+                            {renderInfoTopic()}
+                        </Collapse.Panel>
+                        <Collapse.Panel header="Danh sách câu hỏi" key="2">
+                            <Typography.Title level={5} style={{margin: 0, marginBottom: 10, borderBottom: '1px solid'}}>Danh sách câu hỏi</Typography.Title>
+                            {
+                                questionStates.loading ? (
+                                    <LoadingOutlined />
+                                ) : (
+                                    questionStates.questions.length ? (
+                                        questionStates.questions.map(question => itemQuestionView({ question }))
+                                    ) : (
+                                        <div>không có dữ liệu</div>
+                                    )
+                                )
+                            }
+                        </Collapse.Panel>
+                    </Collapse>
+                ) : (
+                    <div>
+                        { renderInfoTopic() }
+                    </div>
+                )
+            }
         </div>
     )
-}
+})

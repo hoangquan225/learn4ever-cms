@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import styles from "./courses.module.scss";
 import classNames from "classnames/bind"
 import { useForm } from "antd/es/form/Form";
-import { courseState, requestLoadByIdTagAndCategory, requestLoadCourses, requestUpdateCourse } from "./courseSlice";
+import { courseState, requestLoadByIdTagAndCategory, requestLoadCourses, requestUpdateCourse, setCourseInfo } from "./courseSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 import TTCSconfig from "../../submodule/common/config";
 import { convertSlug } from "../../utils/slug";
