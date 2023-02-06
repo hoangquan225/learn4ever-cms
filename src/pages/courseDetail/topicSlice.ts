@@ -22,7 +22,7 @@ const initialState: TopicState = {
 
 export const requestLoadTopicByCourse = createAsyncThunk(
   "topic/requestLoadTopicByCourse",
-  async (props: { idCourse: string; type: number; parentId?: string }) => {
+  async (props: { idCourse: string; type: number; parentId?: string; status?: number }) => {
     const res = await apiLoadTopicsByCourse(props);
     return res.data;
   }

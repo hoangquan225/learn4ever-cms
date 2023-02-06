@@ -135,7 +135,6 @@ const columns: ColumnsType<DataType> = [
 ];
 
   useEffect(() => {
-    handleLoadFeedbacks()
     loadCategorys(TTCSconfig.STATUS_PUBLIC)
   }, [])
 
