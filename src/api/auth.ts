@@ -10,6 +10,6 @@ export const apiGetUserFromToken = (token: string) => {
   });
 };
 
-export const apiLogin = (payload: { account: string; password: string }) => {
+export const apiLogin = (payload: { account: string; password: string, userRole: number }) => {
   return ApiConfig(EndPoint.LOGIN, { payload });
 };

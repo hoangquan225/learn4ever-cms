@@ -55,6 +55,7 @@ const LoginPages = () => {
         requestLogin({
           account: data.account,
           password: encodePassword,
+          userRole: TTCSconfig.ROLE_ADMIN
         })
       );
 
