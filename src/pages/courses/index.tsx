@@ -19,6 +19,7 @@ import { PAGE_SIZE, PAGE_SIZE_COURSE, STATUSES } from "../../utils/contraint";
 import { useNavigate } from "react-router-dom";
 import { apiLoadTagsByIdCategory } from "../../api/tagApi";
 import { Tag as Tags} from "../../submodule/models/tag";
+import TextArea from "antd/es/input/TextArea";
   
 const cx = classNames.bind(styles);
 interface DataType {
@@ -71,8 +72,8 @@ const CoursePage = () => {
 
   useEffect(() => {
     if (valueEdit) {
-      const { courseName, slug, status, des, idCategory, idTag } = valueEdit
-      form.setFieldsValue({ courseName, slug, status, idCategory, idTag })
+      const { courseName, slug, status, des, idCategory, idTag, shortDes } = valueEdit
+      form.setFieldsValue({ courseName, slug, status, idCategory, idTag, shortDes })
       descRef?.current?.setContent(des)
     }
   }, [valueEdit])
@@ -83,7 +84,9 @@ const CoursePage = () => {
   }, []);
 
   useEffect(() => {
-    loadTagsByIdCategory(idCategorysModal);
+    if(idCategorysModal) {
+      loadTagsByIdCategory(idCategorysModal);
+    }
   }, [idCategorysModal]);
 
   useEffect(() => {
@@ -159,13 +162,6 @@ const CoursePage = () => {
 
   const loadTagsByIdCategory = async (idCategory :any) => {
     try {
-      // const actionResult = await dispatch(
-      //   requestLoadTagsByIdCategory({
-      //     idCategory,
-      //     status: 1,
-      //   })
-      // );
-      // const res = unwrapResult(actionResult);
       const res = await apiLoadTagsByIdCategory({
         idCategory,
         status: 1,
@@ -489,7 +485,23 @@ const CoursePage = () => {
                   key="descriptionCourse"
                   editorRef={descRef}
                   value={valueEdit?.des ?? ''}
-                  heightEditor="500px"
+                  heightEditor="400px"
+                />
+              </Form.Item>
+
+              <Form.Item 
+                label="Mô tả ngắn" 
+                name="shortDes"
+              >
+                <TextArea
+                  autoSize={{
+                    minRows: 5,
+                    maxRows: 10,
+                  }}
+                  placeholder="Nhập mô tả ngắn..."
+                  style={{ minWidth: "100%" }}
+                  showCount
+                  maxLength={300}
                 />
               </Form.Item>
             </Col>
