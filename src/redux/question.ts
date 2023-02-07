@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { apiLoadQuestionsByIdTopic } from "../api/question";
+import _ from "lodash";
+import { apiLoadQuestionsByIdTopic, apiUpdateQuestion } from "../api/question";
 import { Question } from "../submodule/models/question"
 import { RootState } from "./store";
 
@@ -26,6 +27,11 @@ export const requestLoadQuestionsByIdTopic = createAsyncThunk('question/requestL
     return res.data
 })
 
+export const requestUpdateQuestion = createAsyncThunk('question/requestUpdateQuestion', async (props: Question) => {
+    const res = await apiUpdateQuestion(props);
+    return res.data
+})
+
 export const questionSlice = createSlice({
     name: 'question',
     initialState,
@@ -35,7 +41,7 @@ export const questionSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        const actionList = [requestLoadQuestionsByIdTopic];
+        const actionList = [requestLoadQuestionsByIdTopic, requestUpdateQuestion];
         actionList.forEach(action => {
             builder.addCase(action.pending, (state) => {
                 state.loading = true;
@@ -54,8 +60,31 @@ export const questionSlice = createSlice({
             total: number
         }>) => {
             state.loading = false;
-            state.questions = action.payload.data;
+            state.questions = _.orderBy(
+                action.payload.data,
+                ["index"],
+                ["asc"]
+              ).map((question, index) => {
+                return {
+                  ...question,
+                  index: index + 1,
+                  answer: _.orderBy(question.answer, ["index"], ["asc"]).map(
+                    (answer, index) => ({
+                      ...answer,
+                      index,
+                    })
+                  ),
+                };
+              });
             state.total = action.payload.total
+        })
+
+        // update 
+        builder.addCase(requestUpdateQuestion.fulfilled, (state, action: PayloadAction<{
+            data: Question,
+            status: number,
+        }>)=> {
+            state.loading = false;
         })
     
     }

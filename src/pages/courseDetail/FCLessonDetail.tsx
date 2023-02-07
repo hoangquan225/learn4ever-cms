@@ -1,15 +1,16 @@
-import { ClockCircleOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { Collapse, notification, Radio, Typography, UploadProps } from 'antd'
+import { Collapse, Modal, notification, Radio, Typography, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
 import moment from "moment"
 import { memo, useEffect, useRef, useState } from "react"
 import { apiUploadMultipleVideo } from "../../api/uploadApi"
+import ModalCreateAndUpdateQuestion from "../../components/ModalCreateAndUpdateQuestion"
 import TinymceEditor from "../../components/TinymceEditor"
 import { useAppDispatch, useAppSelector } from "../../redux/hook"
-import { questionState, requestLoadQuestionsByIdTopic } from "../../redux/question"
+import { questionState, requestLoadQuestionsByIdTopic, setQuestionInfo } from "../../redux/question"
 import TTCSconfig from "../../submodule/common/config"
 import { Question } from "../../submodule/models/question"
 import { answers } from "../../submodule/utils/contants"
@@ -39,6 +40,8 @@ export const LessonCourse = memo((prop: {
     const [urlVideo, setUrlVideo] = useState<string>('')
     const [urlVideoUpload, setUrlVideoUpload] = useState<string>('')
     const [keyUpload, setKeyUpload] = useState<number>(Math.random())
+    const [isEdit, setIsEdit] = useState<boolean>(false)
+    const [isOpen, setIsOpen] = useState<boolean>(false)
     const topicType = topicStates.dataTopic?.topicType
 
     useEffect(() => {
@@ -171,8 +174,18 @@ export const LessonCourse = memo((prop: {
         const { question } = props
         return (
             <div>
-                <div className={cx('question_number')}>Câu hỏi {question.index}</div>
-                <div style={{fontWeight: 500}}>Đề bài :</div>
+                <div className={cx('question_number')}>
+                    Câu hỏi {question.index} 
+                    <Button 
+                        icon={<EditOutlined color="#52c41a" />} 
+                        onClick={() => {
+                            dispatch(setQuestionInfo(question))
+                            setIsOpen(true) 
+                            setIsEdit(false)
+                        }}
+                    />
+                </div>
+                <div style={{ fontWeight: 500 }}>Đề bài :</div>
                 <div dangerouslySetInnerHTML={{ __html: question.question }} />
                 <div className={cx('question_answers')}>
                     {
@@ -240,7 +253,7 @@ export const LessonCourse = memo((prop: {
                             !isTopicParent && (
                                 <Form.Item
                                     name="timeExam"
-                                    label={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? "Độ dài Video (s)" : "Thời gian làm bài"}
+                                    label={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? "Độ dài Video (s)" : "Thời gian làm bài (p)"}
                                     rules={[
                                         {
                                             required: true,
@@ -277,7 +290,7 @@ export const LessonCourse = memo((prop: {
                                 key={keyUpload}
                                 editorRef={descRef}
                                 value={topicStates.dataTopic?.des ?? ""}
-                                heightEditor="250px"
+                                heightEditor={topicType === TTCSconfig.TYPE_TOPIC_DOCUMENT ? "500px" : "250px"}
                             />
                         </Form.Item>
 
@@ -361,28 +374,44 @@ export const LessonCourse = memo((prop: {
             </Typography.Title>
             {
                 topicType === TTCSconfig.TYPE_TOPIC_PRATICE ? (
-                    <Collapse defaultActiveKey={['2']} onChange={handleChangeCollapse}>
-                        <Collapse.Panel header="Thông tin bài tập" key="1">
-                            {renderInfoTopic()}
-                        </Collapse.Panel>
-                        <Collapse.Panel header="Danh sách câu hỏi" key="2">
-                            <Typography.Title level={5} style={{margin: 0, marginBottom: 10, borderBottom: '1px solid'}}>Danh sách câu hỏi</Typography.Title>
-                            {
-                                questionStates.loading ? (
-                                    <LoadingOutlined />
-                                ) : (
-                                    questionStates.questions.length ? (
-                                        questionStates.questions.map(question => itemQuestionView({ question }))
+                    <>
+                        <Collapse defaultActiveKey={['2']} onChange={handleChangeCollapse}>
+                            <Collapse.Panel header="Thông tin bài tập" key="1">
+                                {renderInfoTopic()}
+                            </Collapse.Panel>
+                            <Collapse.Panel header="Danh sách câu hỏi" key="2">
+                                <Typography.Title level={5} style={{ margin: 0, marginBottom: 10, borderBottom: '1px solid' }}>Danh sách câu hỏi</Typography.Title>
+                                <Button type="primary" onClick={() => {
+                                    setIsEdit(false)
+                                    setIsOpen(true)
+                                }}
+                                    style={{
+                                        marginBottom: 10
+                                    }}
+                                >Tạo câu hỏi</Button>
+                                {
+                                    questionStates.loading ? (
+                                        <LoadingOutlined />
                                     ) : (
-                                        <div>không có dữ liệu</div>
+                                        questionStates.questions.length ? (
+                                            questionStates.questions.map(question => itemQuestionView({ question }))
+                                        ) : (
+                                            <div>không có dữ liệu</div>
+                                        )
                                     )
-                                )
-                            }
-                        </Collapse.Panel>
-                    </Collapse>
+                                }
+                            </Collapse.Panel>
+                        </Collapse>
+                        <ModalCreateAndUpdateQuestion 
+                            isEdit= {isEdit} 
+                            isOpen={isOpen} 
+                            question={questionStates.questionInfo} 
+                            setIsOpen={setIsOpen}
+                        />
+                    </>
                 ) : (
                     <div>
-                        { renderInfoTopic() }
+                        {renderInfoTopic()}
                     </div>
                 )
             }

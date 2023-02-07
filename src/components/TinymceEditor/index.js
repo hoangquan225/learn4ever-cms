@@ -9,23 +9,29 @@ import './style.scss'
  *  value?: string;
  *  heightEditor?: any;
  *  id?: string;
- *  onChange?: (text: string) => void;
+ *  onChange?: (e, editor) => void;
  *  inline?: boolean;
+ *  className?:string;
  * }} props 
  * @returns 
  */
-const TinymceEditor = ({ editorRef, value, heightEditor, id, onChange, inline = false }) => {
+const TinymceEditor = ({ editorRef, value, heightEditor, id, onChange, inline = false, className = '' }) => {
     const useDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     return (
         <Editor
             id={id}
             inline={inline}
+            body_class = {className}
+            selector= 'textarea#full-featured'
             apiKey={process.env.REACT_APP_EDITOR_APIKEY || "frrix5f6jsh26jzcp3yucjinkqwt7olh66vj7py7el1535zu"}
             initialValue={value}
             onInit={(evt, editor) => { if (editorRef) { editorRef.current = editor } }}
             onEditorChange={(e) => {
-                if (onChange) onChange(e)
+                // if (onChange) onChange(e)
+            }}
+            onChange={(e, editor) => {
+                if (onChange) onChange(e, editor)
             }}
             init={{
                 selector: 'textarea#full-featured-non-premium',
