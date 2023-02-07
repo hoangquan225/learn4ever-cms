@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import routes from "../../../pages/routes";
 import classNames from "classnames/bind";
 import styles from "./style.module.scss";
+import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
 
@@ -91,7 +92,12 @@ const LayoutDefault = ({ children }: { children?: any }) => {
           />
           <div className={cx("admin__text")}>
             <h5 className={cx("admin__name")}>Admin</h5>
-            <button className={cx("admin__logout")}>Log out</button>
+            <button className={cx("admin__logout")} 
+              onClick={() => {
+                navigate('/dang-nhap')
+                Cookies.remove("tokenAdmin");
+              }}
+            >Log out</button>
           </div>
         </div>
         <Menu
