@@ -44,26 +44,26 @@ const ModalCreateAndUpdateQuestion = (props: {
 
     const handleOk = async () => {
 
-        console.log(new Question({
-            ...question,
-            answer: answers,
-            question: questionRef.current?.getContent(),
-            hint: hintRef.current?.getContent(),
-            index: questionStates.total + 1,
-            idTopic: topicStates.dataTopic?.id,
-            status: TTCSconfig.STATUS_PUBLIC,
-        }));
+        // console.log(new Question({
+        //     ...question,
+        //     answer: answers,
+        //     question: questionRef.current?.getContent(),
+        //     hint: hintRef.current?.getContent(),
+        //     index: questionStates.total + 1,
+        //     idTopic: topicStates.dataTopic?.id,
+        //     status: TTCSconfig.STATUS_PUBLIC,
+        // }));
 
         try {
-            // const res = await dispatch(requestUpdateQuestion(new Question({
-            //     ...question,
-            //     answer: answers,
-            //     question: questionRef.current?.getContent(),
-            //     hint: hintRef.current?.getContent(),
-            //     index: question?.index ? question?.index : questionStates.total + 1,
-            //     idTopic: topicStates.dataTopic?.id,
-            //     status: TTCSconfig.STATUS_PUBLIC,
-            // })))
+            const res = await dispatch(requestUpdateQuestion(new Question({
+                ...question,
+                answer: answers,
+                question: questionRef.current?.getContent(),
+                hint: hintRef.current?.getContent(),
+                index: question?.index ? question?.index : questionStates.total + 1,
+                idTopic: topicStates.dataTopic?.id,
+                status: TTCSconfig.STATUS_PUBLIC,
+            })))
             unwrapResult(res)
             notification.success({
                 message: 'cập nhật thành công',
