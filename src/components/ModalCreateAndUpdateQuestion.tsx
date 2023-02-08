@@ -1,15 +1,15 @@
-import { Button, Checkbox, Form, Modal, notification } from "antd"
+import { unwrapResult } from "@reduxjs/toolkit";
+import { Button, Checkbox, Form, Modal, notification } from "antd";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useRef, useState } from "react";
-import { Question } from "../submodule/models/question"
-import TinymceEditor from "./TinymceEditor";
-import './style.scss'
-import { CheckboxChangeEvent } from "antd/es/checkbox";
-import { useAppDispatch, useAppSelector } from "../redux/hook";
 import { topicState } from "../pages/courseDetail/topicSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hook";
 import { questionState, requestLoadQuestionsByIdTopic, requestUpdateQuestion, setQuestionInfo } from "../redux/question";
 import TTCSconfig from "../submodule/common/config";
-import { unwrapResult } from "@reduxjs/toolkit";
+import { Question } from "../submodule/models/question";
+import './style.scss';
+import TinymceEditor from "./TinymceEditor";
 
 const ModalCreateAndUpdateQuestion = (props: {
     question: Question | null,
@@ -27,13 +27,14 @@ const ModalCreateAndUpdateQuestion = (props: {
     const [answers, setAnswers] = useState<{
         index: number,
         text: string,
-        isResult: boolean,
-        _id?: string | null
+        isResult: boolean
     }[]>([])
 
     useEffect(() => {
         if (isOpen) {
             setAnswers(question ? question?.answer : [])
+            questionRef?.current?.setContent(question?.question)
+            hintRef?.current?.setContent(question?.hint)
         } else {
             // reset
             dispatch(setQuestionInfo(null))
@@ -91,14 +92,14 @@ const ModalCreateAndUpdateQuestion = (props: {
     }
 
     const handleCheckbox = (e: CheckboxChangeEvent, index: number) => {
-        const answer = answers?.find(o => o.index === index)
+        const answer = answers?.findIndex(o => o.index === index)
         const newAnswers = [...answers]
-        if (answer) {
+        if (answer !== -1) {
             if (e.target.checked) {
-                newAnswers.splice(index - 1, 1, { ...answer, isResult: true })
+                newAnswers.splice(index, 1, { ...answers[answer], isResult: true })
                 setAnswers(newAnswers)
             } else {
-                newAnswers.splice(index - 1, 1, { ...answer, isResult: false })
+                newAnswers.splice(index, 1, { ...answers[answer], isResult: false })
                 setAnswers(newAnswers)
             }
         }
@@ -150,7 +151,7 @@ const ModalCreateAndUpdateQuestion = (props: {
                     answers.map((answer, index) => (
                         <>
                             <div>Câu {answer.index}</div>
-                            <Checkbox checked={answer.isResult} onChange={(e: CheckboxChangeEvent) => handleCheckbox(e, index + 1)}>Đáp án đúng</Checkbox>
+                            <Checkbox checked={answer.isResult} onChange={(e: CheckboxChangeEvent) => handleCheckbox(e, answer.index)}>Đáp án đúng</Checkbox>
                             <TinymceEditor
                                 id={`${answer.index}`}
                                 key={`${answer.index}`}
@@ -158,12 +159,11 @@ const ModalCreateAndUpdateQuestion = (props: {
                                 inline={true}
                                 className='EditorAnswer'
                                 onChange={(e, editor) => {
-                                    const answer = answers?.find(o => o.index === index + 1)
-                                    if (answer) {
+                                    const answerValue = answers?.findIndex(o => o.index === answer.index)
+                                    
+                                    if (answerValue !== -1) {
                                         const newAnswers = [...answers]
-                                        newAnswers.splice(index, 1, { ...answer, text: editor.getContent() })
-                                        console.log({ newAnswers });
-
+                                        newAnswers.splice(answerValue, 1, { ...answers[answerValue], text: editor.getContent() })
                                         setAnswers(newAnswers)
                                     }
                                 }}
@@ -174,7 +174,7 @@ const ModalCreateAndUpdateQuestion = (props: {
 
                 <Button onClick={() => {
                     setAnswers([...answers, {
-                        index: answers.length + 1,
+                        index: answers.length,
                         isResult: false,
                         text: ''
                     }])
