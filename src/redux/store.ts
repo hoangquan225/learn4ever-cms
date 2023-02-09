@@ -7,6 +7,7 @@ import lessonReducer from "./lessonSlice";
 import feedbackReducer from "../pages/feedback/feedbackSlice";
 import questionReducer from "./question";
 import authReducer from "./authSlice";
+import statisticReducer from "../pages/statistic/statisticSlice";
 
 export const store = configureStore({
     reducer: {
@@ -14,10 +15,11 @@ export const store = configureStore({
         tag: tagReducer,
         course: courseReducer,
         topic: topicReducer, 
-        lesson: lessonReducer, 
+        lesson: lessonReducer,
         feedback: feedbackReducer,
         question: questionReducer,
         authState: authReducer,
+        statistic: statisticReducer,
     },
     middleware: (getDefaultMiddle) => getDefaultMiddle({ serializableCheck: false }),
 });

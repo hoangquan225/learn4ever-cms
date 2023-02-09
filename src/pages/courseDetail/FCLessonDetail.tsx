@@ -1,6 +1,6 @@
 import { ClockCircleOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { Collapse, Modal, notification, Radio, Typography, UploadProps } from 'antd'
+import { Collapse, Modal, notification, Radio, Switch, Typography, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
@@ -10,7 +10,7 @@ import { apiUploadMultipleVideo } from "../../api/uploadApi"
 import ModalCreateAndUpdateQuestion from "../../components/ModalCreateAndUpdateQuestion"
 import TinymceEditor from "../../components/TinymceEditor"
 import { useAppDispatch, useAppSelector } from "../../redux/hook"
-import { questionState, requestLoadQuestionsByIdTopic, setQuestionInfo } from "../../redux/question"
+import { questionState, requestLoadQuestionsByIdTopic, setQuestionInfo, setQuestions } from "../../redux/question"
 import TTCSconfig from "../../submodule/common/config"
 import { Question } from "../../submodule/models/question"
 import { answers } from "../../submodule/utils/contants"
@@ -25,8 +25,9 @@ export const LessonCourse = memo((prop: {
     onloadTopic?: (idCourse: string, type: number, parentId?: string) => Promise<void>,
     type?: number,
     setIndexActiveDataChild?: React.Dispatch<React.SetStateAction<string | undefined>>
+    setIndexActive?:React.Dispatch<React.SetStateAction<number | undefined>>
 }) => {
-    const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { } } = prop
+    const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { }, setIndexActive = () => { } } = prop
     const dispatch = useAppDispatch();
     const descRef = useRef<any>();
     const [form] = useForm();
@@ -43,6 +44,9 @@ export const LessonCourse = memo((prop: {
     const [isEdit, setIsEdit] = useState<boolean>(false)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const topicType = topicStates.dataTopic?.topicType
+    
+    // config exam in video 
+    const [isPraticeInVideo, setIsPraticeInVideo] = useState<boolean>(false)
 
     useEffect(() => {
         setIsUploadVideo(1)
@@ -53,13 +57,13 @@ export const LessonCourse = memo((prop: {
                 status: topicStates.dataTopic?.status,
                 timeExam: topicStates.dataTopic?.timeExam
             })
-            console.log(topicStates.dataTopic?.video || '');
-
             setUrlVideo(topicStates.dataTopic?.video || '')
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
         }
-        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE) {
+        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM && topicStates.dataTopic?.id) {
             handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+        } else {
+            dispatch(setQuestions([]))
         }
     }, [topicStates.dataTopic])
 
@@ -69,7 +73,6 @@ export const LessonCourse = memo((prop: {
             const { onSuccess = () => { }, onError = () => { }, onProgress, file } = options;
             try {
                 const res = await apiUploadMultipleVideo(file)
-                console.log({ res });
                 const data = res.data[0]
                 setUrlVideoUpload(data?.url)
                 setUrlVideo(data?.url)
@@ -142,6 +145,7 @@ export const LessonCourse = memo((prop: {
             setIndexActiveDataChild(prev => {
                 return `${prev}:${data?.data?.index - 1}`
             })
+            setIndexActive(data?.data?.index - 1)
             message.success('cập nhật thành công')
             data?.status === 0 && dispatch(requestLoadTopicById({ id: data?.data?.id }))
         } catch (error) {
@@ -175,12 +179,12 @@ export const LessonCourse = memo((prop: {
         return (
             <div>
                 <div className={cx('question_number')}>
-                    Câu hỏi {question.index} 
-                    <Button 
-                        icon={<EditOutlined color="#52c41a" />} 
+                    Câu hỏi {question.index}
+                    <Button
+                        icon={<EditOutlined color="#52c41a" />}
                         onClick={() => {
                             dispatch(setQuestionInfo(question))
-                            setIsOpen(true) 
+                            setIsOpen(true)
                             setIsEdit(false)
                         }}
                     />
@@ -250,7 +254,7 @@ export const LessonCourse = memo((prop: {
                     </Form.Item> */}
 
                         {
-                            !isTopicParent && (
+                            !isTopicParent && topicType !== TTCSconfig.TYPE_TOPIC_DOCUMENT && (
                                 <Form.Item
                                     name="timeExam"
                                     label={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? "Độ dài Video (s)" : "Thời gian làm bài (p)"}
@@ -343,6 +347,12 @@ export const LessonCourse = memo((prop: {
                                             )
                                         }
                                     </div>
+                                    <div style={{
+                                        marginTop: 10
+                                    }}>Có bài tập khi xem video : </div>
+                                    <Switch checked={!!isPraticeInVideo} onChange={(checked: boolean) => {
+                                        setIsPraticeInVideo(checked)
+                                    }} />
                                 </div>
                             )
                         }
@@ -373,39 +383,44 @@ export const LessonCourse = memo((prop: {
                 {` ${topicStates.dataTopic?.name}`}
             </Typography.Title>
             {
-                topicType === TTCSconfig.TYPE_TOPIC_PRATICE ? (
+                topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicType === TTCSconfig.TYPE_TOPIC_VIDEO || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM ? (
                     <>
-                        <Collapse defaultActiveKey={['2']} onChange={handleChangeCollapse}>
+                        <Collapse defaultActiveKey={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? ['1'] : ['2']}  onChange={handleChangeCollapse}>
                             <Collapse.Panel header="Thông tin bài tập" key="1">
                                 {renderInfoTopic()}
                             </Collapse.Panel>
-                            <Collapse.Panel header="Danh sách câu hỏi" key="2">
-                                <Typography.Title level={5} style={{ margin: 0, marginBottom: 10, borderBottom: '1px solid' }}>Danh sách câu hỏi</Typography.Title>
-                                <Button type="primary" onClick={() => {
-                                    setIsEdit(false)
-                                    setIsOpen(true)
-                                }}
-                                    style={{
-                                        marginBottom: 10
+                            {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) && (
+                                <Collapse.Panel header="Danh sách câu hỏi" key="2">
+                                    <Typography.Title level={5} style={{ margin: 0, marginBottom: 10, borderBottom: '1px solid' }}>Danh sách câu hỏi</Typography.Title>
+                                    <Button type="primary" onClick={() => {
+                                        setIsEdit(false)
+                                        setIsOpen(true)
                                     }}
-                                >Tạo câu hỏi</Button>
-                                {
-                                    questionStates.loading ? (
-                                        <LoadingOutlined />
-                                    ) : (
-                                        questionStates.questions.length ? (
-                                            questionStates.questions.map(question => itemQuestionView({ question }))
+                                        style={{
+                                            marginBottom: 10
+                                        }}
+                                    >Tạo câu hỏi</Button>
+                                    <div>
+                                        {/* thời gian */}
+                                    </div>
+                                    {
+                                        questionStates.loading ? (
+                                            <LoadingOutlined />
                                         ) : (
-                                            <div>không có dữ liệu</div>
+                                            questionStates.questions.length ? (
+                                                questionStates.questions.map(question => itemQuestionView({ question }))
+                                            ) : (
+                                                <div>không có dữ liệu</div>
+                                            )
                                         )
-                                    )
-                                }
-                            </Collapse.Panel>
+                                    }
+                                </Collapse.Panel>
+                            )}
                         </Collapse>
-                        <ModalCreateAndUpdateQuestion 
-                            isEdit= {isEdit} 
-                            isOpen={isOpen} 
-                            question={questionStates.questionInfo} 
+                        <ModalCreateAndUpdateQuestion
+                            isEdit={isEdit}
+                            isOpen={isOpen}
+                            question={questionStates.questionInfo}
                             setIsOpen={setIsOpen}
                         />
                     </>
