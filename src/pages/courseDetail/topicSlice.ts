@@ -100,7 +100,7 @@ export const topicSlice = createSlice({
         action: PayloadAction<Topic>
       ) => {
         state.loading = false;
-        state.dataTopic = new Topic(action.payload)
+        state.dataTopic = action.payload
       }
     );
   },
