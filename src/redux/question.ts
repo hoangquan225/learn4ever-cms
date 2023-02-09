@@ -40,7 +40,7 @@ export const questionSlice = createSlice({
             state.questionInfo = action.payload
         }, 
         setQuestions: (state, action) => {
-            state.questions = action.payload
+            state.questions = _.orderBy(action.payload, ['index'], 'asc')
         }
     },
     extraReducers: (builder) => {

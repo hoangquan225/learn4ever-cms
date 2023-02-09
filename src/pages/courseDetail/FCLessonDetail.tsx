@@ -1,6 +1,6 @@
 import { ClockCircleOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { Collapse, Modal, notification, Radio, Switch, Typography, UploadProps } from 'antd'
+import { Collapse, Modal, notification, Radio, Space, Switch, Tooltip, Typography, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
@@ -18,6 +18,8 @@ import { STATUSES } from "../../utils/contraint"
 import { courseState } from "../courses/courseSlice"
 import styles from "./courseDetail.module.scss"
 import { requestLoadTopicById, requestUpdateTopic, topicState } from "./topicSlice"
+import { FaSync } from "react-icons/fa"
+import { Topic } from "../../submodule/models/topic"
 
 const cx = classNames.bind(styles);
 
@@ -25,11 +27,12 @@ export const LessonCourse = memo((prop: {
     onloadTopic?: (idCourse: string, type: number, parentId?: string) => Promise<void>,
     type?: number,
     setIndexActiveDataChild?: React.Dispatch<React.SetStateAction<string | undefined>>
-    setIndexActive?:React.Dispatch<React.SetStateAction<number | undefined>>
+    setIndexActive?: React.Dispatch<React.SetStateAction<number | undefined>>
 }) => {
     const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { }, setIndexActive = () => { } } = prop
     const dispatch = useAppDispatch();
     const descRef = useRef<any>();
+    const refVideo = useRef<any>();
     const [form] = useForm();
     const topicStates = useAppSelector(topicState);
     const courseStates = useAppSelector(courseState);
@@ -44,9 +47,12 @@ export const LessonCourse = memo((prop: {
     const [isEdit, setIsEdit] = useState<boolean>(false)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const topicType = topicStates.dataTopic?.topicType
-    
+
     // config exam in video 
     const [isPraticeInVideo, setIsPraticeInVideo] = useState<boolean>(false)
+
+    // time practive in video 
+    const [timePratice, setTimePratice] = useState<number>(0);
 
     useEffect(() => {
         setIsUploadVideo(1)
@@ -60,8 +66,19 @@ export const LessonCourse = memo((prop: {
             setUrlVideo(topicStates.dataTopic?.video || '')
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
         }
-        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM && topicStates.dataTopic?.id) {
+        if (topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) {
             handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+        } else if(topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
+            // video 
+            if(topicStates.dataTopic.timePracticeInVideo?.length) {
+                setIsPraticeInVideo(true)
+                setTimePratice(topicStates.dataTopic.timePracticeInVideo[0].time)
+                dispatch(setQuestions(topicStates.dataTopic.timePracticeInVideo[0].questionData))
+            }else {
+                setIsPraticeInVideo(false)
+                setTimePratice(0)
+                dispatch(setQuestions([]))
+            }
         } else {
             dispatch(setQuestions([]))
         }
@@ -87,8 +104,6 @@ export const LessonCourse = memo((prop: {
             authorization: 'authorization-text',
         },
         onChange(info) {
-            console.log({ info });
-
             if (info.file.status !== 'uploading') {
             }
             if (info.file.status === 'done') {
@@ -98,8 +113,6 @@ export const LessonCourse = memo((prop: {
             }
         },
         beforeUpload: (file) => {
-            console.log({ file });
-
             const isMp4 = file.type === "video/mp4" || file.type === "video/ogg";
             if (!isMp4) {
                 message.error("You can only upload MP4/OGG file!");
@@ -155,6 +168,41 @@ export const LessonCourse = memo((prop: {
         }
     }
 
+    const handleUpdatePraticeForTopic = async (question: Question) => {
+        const timePracticeInVideo: {
+            time: number;
+            totalQuestion: number;
+            idQuestion: string[];
+        } = {
+            time: timePratice,
+            totalQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? topicStates.dataTopic?.timePracticeInVideo[0]?.totalQuestion + 1 : 1,
+            idQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? [question.id || '',...topicStates.dataTopic?.timePracticeInVideo[0]?.idQuestion] : [question.id || '']
+        }
+
+        try {
+            const actionResult = await dispatch(requestUpdateTopic(new Topic({
+                ...topicStates.dataTopic,
+                timePracticeInVideo: [timePracticeInVideo],
+                updateDate: moment().valueOf()
+            })))
+            const data = unwrapResult(actionResult);
+            handleClickTopicChild(topicStates.dataTopic?.id || '')
+            // onloadTopic(courseStates.courseInfo?.id || '', type)
+            // dispatch(setQuestions(data.data.topicStates.dataTopic.timePracticeInVideo[0].questionData))
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleClickTopicChild = async (id: string) => {
+        try {
+          const requestResult = await dispatch(requestLoadTopicById({ id }))
+          unwrapResult(requestResult)
+        } catch (error) {
+          message.error('không load được, lỗi server')
+        }
+      }
+
     const handleLoadQuestionByIdtopic = async (idTopic: string, status: number) => {
         try {
             const res = await dispatch(requestLoadQuestionsByIdTopic({
@@ -173,6 +221,10 @@ export const LessonCourse = memo((prop: {
     const handleChangeCollapse = async (key: string | string[]) => {
 
     };
+
+    const handleAsyncTime = () => {
+        setTimePratice(Math.floor(refVideo.current.currentTime))
+    }
 
     const itemQuestionView = (props: { question: Question }) => {
         const { question } = props
@@ -325,7 +377,7 @@ export const LessonCourse = memo((prop: {
                                                     {
                                                         urlVideoUpload && (
                                                             <div>
-                                                                <video width="340" height="250" controls style={{ margin: '10px 10px 0 0', borderRadius: '4px' }} key={keyUpload}>
+                                                                <video ref={refVideo} width="340" height="250" controls style={{ margin: '10px 10px 0 0', borderRadius: '4px' }} key={keyUpload}>
                                                                     <source src={urlVideoUpload} />
                                                                     Trình duyệt của bạn không hỗ trợ video này
                                                                 </video>
@@ -347,12 +399,18 @@ export const LessonCourse = memo((prop: {
                                             )
                                         }
                                     </div>
-                                    <div style={{
-                                        marginTop: 10
-                                    }}>Có bài tập khi xem video : </div>
-                                    <Switch checked={!!isPraticeInVideo} onChange={(checked: boolean) => {
-                                        setIsPraticeInVideo(checked)
-                                    }} />
+                                    {
+                                        topicStates.dataTopic?.id && (
+                                            <>
+                                                <div style={{
+                                                    marginTop: 10
+                                                }}>Có bài tập khi xem video : </div>
+                                                <Switch checked={!!isPraticeInVideo} onChange={(checked: boolean) => {
+                                                    setIsPraticeInVideo(checked)
+                                                }} />
+                                            </>
+                                        )
+                                    }
                                 </div>
                             )
                         }
@@ -385,7 +443,7 @@ export const LessonCourse = memo((prop: {
             {
                 topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicType === TTCSconfig.TYPE_TOPIC_VIDEO || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM ? (
                     <>
-                        <Collapse defaultActiveKey={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? ['1'] : ['2']}  onChange={handleChangeCollapse}>
+                        <Collapse defaultActiveKey={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? ['1'] : ['2']} onChange={handleChangeCollapse}>
                             <Collapse.Panel header="Thông tin bài tập" key="1">
                                 {renderInfoTopic()}
                             </Collapse.Panel>
@@ -395,14 +453,27 @@ export const LessonCourse = memo((prop: {
                                     <Button type="primary" onClick={() => {
                                         setIsEdit(false)
                                         setIsOpen(true)
+                                        dispatch(setQuestionInfo(null))
                                     }}
                                         style={{
                                             marginBottom: 10
                                         }}
                                     >Tạo câu hỏi</Button>
-                                    <div>
-                                        {/* thời gian */}
-                                    </div>
+                                    {
+                                        topicType === TTCSconfig.TYPE_TOPIC_VIDEO && (
+                                            <Space direction="horizontal">
+                                                <label htmlFor="timePractice">Tại thời điểm (s)</label>
+                                                <input id="timePractice" value={timePratice} onChange={(e) => {
+                                                    if (Number(e.target.value) >= 0) {
+                                                        setTimePratice(Number(e.target.value))
+                                                    } else {
+                                                        setTimePratice(1)
+                                                    }
+                                                }} />
+                                                <Tooltip title="Thời điểm hiện tại"><Button icon={<FaSync />} type='primary' onClick={handleAsyncTime} /></Tooltip>
+                                            </Space>
+                                        )
+                                    }
                                     {
                                         questionStates.loading ? (
                                             <LoadingOutlined />
@@ -420,8 +491,10 @@ export const LessonCourse = memo((prop: {
                         <ModalCreateAndUpdateQuestion
                             isEdit={isEdit}
                             isOpen={isOpen}
-                            question={questionStates.questionInfo}
+                            question={new Question(questionStates?.questionInfo)}
                             setIsOpen={setIsOpen}
+                            handleUpdatePraticeForTopic={handleUpdatePraticeForTopic}
+                            key={questionStates?.questionInfo?.id || ''}
                         />
                     </>
                 ) : (

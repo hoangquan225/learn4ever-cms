@@ -16,8 +16,9 @@ const ModalCreateAndUpdateQuestion = (props: {
     isEdit: boolean,
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+    handleUpdatePraticeForTopic?:(question: Question) => Promise<void>
 }) => {
-    const { isEdit, isOpen, question, setIsOpen } = props
+    const { isEdit, isOpen, question, setIsOpen, handleUpdatePraticeForTopic =() => {} } = props
     const [form] = useForm();
     const questionRef = useRef<any>();
     const hintRef = useRef<any>();
@@ -50,7 +51,9 @@ const ModalCreateAndUpdateQuestion = (props: {
         //     answer: answers,
         //     question: questionRef.current?.getContent(),
         //     hint: hintRef.current?.getContent(),
-        //     index: questionStates.total + 1,
+        //     index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
+        //             ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
+        //             : (question?.index ? question?.index : questionStates.total + 1),
         //     idTopic: topicStates.dataTopic?.id,
         //     status: TTCSconfig.STATUS_PUBLIC,
         // }));
@@ -61,22 +64,29 @@ const ModalCreateAndUpdateQuestion = (props: {
                 answer: answers,
                 question: questionRef.current?.getContent(),
                 hint: hintRef.current?.getContent(),
-                index: question?.index ? question?.index : questionStates.total + 1,
+                index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
+                    ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
+                    : (question?.index ? question?.index : questionStates.total + 1),
                 idTopic: topicStates.dataTopic?.id,
                 status: TTCSconfig.STATUS_PUBLIC,
             })))
-            unwrapResult(res)
+            
+            const data = unwrapResult(res)
+            if (topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
+                await handleUpdatePraticeForTopic(new Question(data.data))
+            } else {
+                const loadQuestion = await dispatch(requestLoadQuestionsByIdTopic({
+                    status: TTCSconfig.STATUS_PUBLIC,
+                    idTopic: topicStates.dataTopic?.id || ''
+                }))
+                unwrapResult(loadQuestion)
+            }
+            setIsOpen(false)
+            setAnswers([])
             notification.success({
                 message: 'cập nhật thành công',
                 duration: 1.5
             })
-            setIsOpen(false)
-            setAnswers([])
-            const loadQuestion = await dispatch(requestLoadQuestionsByIdTopic({
-                status: TTCSconfig.STATUS_PUBLIC, 
-                idTopic: topicStates.dataTopic?.id || ''
-            }))
-            unwrapResult(loadQuestion)
         } catch (error) {
             notification.error({
                 message: 'cập nhật không thành công',
@@ -160,7 +170,7 @@ const ModalCreateAndUpdateQuestion = (props: {
                                 className='EditorAnswer'
                                 onChange={(e, editor) => {
                                     const answerValue = answers?.findIndex(o => o.index === answer.index)
-                                    
+
                                     if (answerValue !== -1) {
                                         const newAnswers = [...answers]
                                         newAnswers.splice(answerValue, 1, { ...answers[answerValue], text: editor.getContent() })
