@@ -25,8 +25,9 @@ export const LessonCourse = memo((prop: {
     onloadTopic?: (idCourse: string, type: number, parentId?: string) => Promise<void>,
     type?: number,
     setIndexActiveDataChild?: React.Dispatch<React.SetStateAction<string | undefined>>
+    setIndexActive?:React.Dispatch<React.SetStateAction<number | undefined>>
 }) => {
-    const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { } } = prop
+    const { onloadTopic = () => { }, type = 0, setIndexActiveDataChild = () => { }, setIndexActive = () => { } } = prop
     const dispatch = useAppDispatch();
     const descRef = useRef<any>();
     const [form] = useForm();
@@ -56,12 +57,10 @@ export const LessonCourse = memo((prop: {
                 status: topicStates.dataTopic?.status,
                 timeExam: topicStates.dataTopic?.timeExam
             })
-            console.log(topicStates.dataTopic?.video || '');
-
             setUrlVideo(topicStates.dataTopic?.video || '')
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
         }
-        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE && topicStates.dataTopic?.id) {
+        if (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM && topicStates.dataTopic?.id) {
             handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
         } else {
             dispatch(setQuestions([]))
@@ -74,7 +73,6 @@ export const LessonCourse = memo((prop: {
             const { onSuccess = () => { }, onError = () => { }, onProgress, file } = options;
             try {
                 const res = await apiUploadMultipleVideo(file)
-                console.log({ res });
                 const data = res.data[0]
                 setUrlVideoUpload(data?.url)
                 setUrlVideo(data?.url)
@@ -147,6 +145,7 @@ export const LessonCourse = memo((prop: {
             setIndexActiveDataChild(prev => {
                 return `${prev}:${data?.data?.index - 1}`
             })
+            setIndexActive(data?.data?.index - 1)
             message.success('cập nhật thành công')
             data?.status === 0 && dispatch(requestLoadTopicById({ id: data?.data?.id }))
         } catch (error) {
@@ -384,13 +383,13 @@ export const LessonCourse = memo((prop: {
                 {` ${topicStates.dataTopic?.name}`}
             </Typography.Title>
             {
-                topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? (
+                topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicType === TTCSconfig.TYPE_TOPIC_VIDEO || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM ? (
                     <>
                         <Collapse defaultActiveKey={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? ['1'] : ['2']}  onChange={handleChangeCollapse}>
                             <Collapse.Panel header="Thông tin bài tập" key="1">
                                 {renderInfoTopic()}
                             </Collapse.Panel>
-                            {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo) && (
+                            {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) && (
                                 <Collapse.Panel header="Danh sách câu hỏi" key="2">
                                     <Typography.Title level={5} style={{ margin: 0, marginBottom: 10, borderBottom: '1px solid' }}>Danh sách câu hỏi</Typography.Title>
                                     <Button type="primary" onClick={() => {

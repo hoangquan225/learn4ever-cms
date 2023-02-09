@@ -75,6 +75,10 @@ const CourseDetail = () => {
       label: "Tạo tài liệu",
       key: "3",
     },
+    {
+      label: 'Tạo đề kiểm tra', 
+      key: "4"
+    }
   ];
 
   useEffect(() => {
@@ -210,15 +214,17 @@ const CourseDetail = () => {
       // setIsOpenEdit(true)
     }else if (key === '3') {
       topicType = TTCSconfig.TYPE_TOPIC_DOCUMENT
+    } else if (key === '4') {
+      topicType = TTCSconfig.TYPE_TOPIC_EXAM
     } else {
       topicType = TTCSconfig.TYPE_TOPIC_PARENT
     }
     dispatch(setDataTopic(new Topic({
-      type: TTCSconfig.TYPE_LESSON,
+      type,
       topicType,
       parentId: parent?.id || null,
       idCourse: courseStates.courseInfo?.id,
-      index: (parent?.topicChildData.length || 0) + 1
+      index: key === '0' ? (topicStates.topics.length || 0) + 1 : (parent?.topicChildData.length || 0) + 1
     })))
     setIsOpenEdit(true)
   };
@@ -254,6 +260,9 @@ const CourseDetail = () => {
             options={statusTopic}
             onChange={(value) => {
               setType(value);
+              setIsOpenEdit(false)
+              setIndexActive(undefined)
+              setIndexActiveDataChild(undefined)
             }}
           />
         </Space>
@@ -344,7 +353,7 @@ const CourseDetail = () => {
                                             >{topic.name}</Col>
                                             <Col span={4}>
                                               <Dropdown
-                                                menu={{ items: items.filter(o => o?.key !== '0'), onClick: ({ key }) => onClickDropDown({ key, parent: topic, index: i }) }}
+                                                menu={{ items: type === TTCSconfig.TYPE_EXAM ? items.filter(o => o?.key === '4') : items.filter(o => o?.key !== '0' && o?.key !== '4'), onClick: ({ key }) => onClickDropDown({ key, parent: topic, index: i }) }}
                                                 trigger={['click']}
                                                 placement="bottomRight"
                                               >
@@ -400,11 +409,12 @@ const CourseDetail = () => {
                                                   >
                                                     <Col span={4} style={{ marginLeft: "8px" }}>
                                                       {
-                                                        topicChild.topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? (
+                                                        type === TTCSconfig.TYPE_EXAM ? <LaptopOutlined /> :
+                                                        (topicChild.topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? (
                                                           <YoutubeOutlined />
                                                         ) : ( topicChild.topicType === TTCSconfig.TYPE_TOPIC_PRATICE
                                                           ? <LaptopOutlined /> : <ReadOutlined />
-                                                        )
+                                                        ))
                                                       }
                                                     </Col>
                                                     <Col span={18}>{topicChild.name}</Col>
@@ -432,7 +442,7 @@ const CourseDetail = () => {
         </Col>
 
         <Col span={18} style={{ backgroundColor: "#f7f7f7" }}>
-          {isOpenEdit && <LessonCourse onloadTopic={loadTopicsByCourse} type={type} setIndexActiveDataChild={setIndexActiveDataChild} />}
+          {isOpenEdit && <LessonCourse onloadTopic={loadTopicsByCourse} type={type} setIndexActiveDataChild={setIndexActiveDataChild} setIndexActive={setIndexActive}/>}
         </Col>
       </Row >
     </div >

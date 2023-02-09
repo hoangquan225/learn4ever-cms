@@ -79,7 +79,7 @@ const StatisticPage = () => {
 
   return <div className={cx('statistic')}>
 
-    <Typography.Title level={4}>Thống kê theo </Typography.Title>
+    <Typography.Title level={4}>Thống kê :</Typography.Title>
 
     <Space direction="horizontal" style={{ marginBottom: 20 }}>
 
