@@ -71,6 +71,10 @@ const CourseDetail = () => {
       label: "Tạo bài tập",
       key: "2",
     },
+    {
+      label: "Tạo tài liệu",
+      key: "3",
+    },
   ];
 
   useEffect(() => {
@@ -181,33 +185,42 @@ const CourseDetail = () => {
 
   const onClickDropDown = (props: { key: string, parent?: Topic, index?: number }) => {
     const { key, parent, index } = props
+    setIndexActiveDataChild(`${index}`)
+    setIndexActive(undefined)
+    let topicType = 0
     if (key === '1') {
-      setIndexActiveDataChild(`${index}`)
-      setIndexActive(undefined)
-      dispatch(setDataTopic(new Topic({
-        type: TTCSconfig.TYPE_LESSON,
-        topicType: TTCSconfig.TYPE_TOPIC_VIDEO,
-        parentId: parent?.id,
-        idCourse: courseStates.courseInfo?.id,
-        index: (parent?.topicChildData.length || 0) + 1
-      })))
-      setIsOpenEdit(true)
+      topicType = TTCSconfig.TYPE_TOPIC_VIDEO
+      // dispatch(setDataTopic(new Topic({
+      //   type: TTCSconfig.TYPE_LESSON,
+      //   topicType: TTCSconfig.TYPE_TOPIC_VIDEO,
+      //   parentId: parent?.id,
+      //   idCourse: courseStates.courseInfo?.id,
+      //   index: (parent?.topicChildData.length || 0) + 1
+      // })))
+      // setIsOpenEdit(true)
     } else if (key === '2') {
-      console.log('hello 2');
-      setIndexActiveDataChild(`${index}`)
-      setIndexActive(undefined)
-      dispatch(setDataTopic(new Topic({
-        type: TTCSconfig.TYPE_LESSON,
-        topicType: TTCSconfig.TYPE_TOPIC_PRATICE,
-        parentId: parent?.id,
-        idCourse: courseStates.courseInfo?.id,
-        index: (parent?.topicChildData.length || 0) + 1
-      })))
-      setIsOpenEdit(true)
+      topicType = TTCSconfig.TYPE_TOPIC_PRATICE
+      // dispatch(setDataTopic(new Topic({
+      //   type: TTCSconfig.TYPE_LESSON,
+      //   topicType: TTCSconfig.TYPE_TOPIC_PRATICE,
+      //   parentId: parent?.id,
+      //   idCourse: courseStates.courseInfo?.id,
+      //   index: (parent?.topicChildData.length || 0) + 1
+      // })))
+      // setIsOpenEdit(true)
+    }else if (key === '3') {
+      topicType = TTCSconfig.TYPE_TOPIC_DOCUMENT
     } else {
-      console.log('hello 0');
-
+      topicType = TTCSconfig.TYPE_TOPIC_PARENT
     }
+    dispatch(setDataTopic(new Topic({
+      type: TTCSconfig.TYPE_LESSON,
+      topicType,
+      parentId: parent?.id || null,
+      idCourse: courseStates.courseInfo?.id,
+      index: (parent?.topicChildData.length || 0) + 1
+    })))
+    setIsOpenEdit(true)
   };
 
   const handleClickTopicParent = (topic: Topic, index: number) => {
@@ -381,7 +394,7 @@ const CourseDetail = () => {
                                                       borderBottom: "1px solid #cdcdcd",
                                                       marginLeft: "20px",
                                                       cursor: "pointer",
-                                                      backgroundColor: indexActiveDataChild === `${i}:${index}` ? '#caf0ff' : ''
+                                                      backgroundColor: indexActiveDataChild === `${i}:${index}` ? '#caf0ff' : (topicChild.status === TTCSconfig.STATUS_PRIVATE ? "#fbffca" : "")
                                                     }}
                                                     onClick={() => handleClickTopicChild(topicChild, `${i}:${index}`)}
                                                   >

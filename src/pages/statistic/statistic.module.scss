@@ -1,0 +1,28 @@
+.statistic {
+    background-color: #9b9b9b;
+    height: 100%;
+    width: 100%;
+    padding: 16px; 
+}
+
+.Button {
+    background-color: #3F51B5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: all 0.3s;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .Button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .Button:active {
+    transform: scale(0.95);
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+  }

@@ -38,6 +38,9 @@ export const questionSlice = createSlice({
     reducers: {
         setQuestionInfo : (state, action) => {
             state.questionInfo = action.payload
+        }, 
+        setQuestions: (state, action) => {
+            state.questions = action.payload
         }
     },
     extraReducers: (builder) => {
@@ -90,7 +93,7 @@ export const questionSlice = createSlice({
     }
 })
 
-export const { setQuestionInfo } = questionSlice.actions
+export const { setQuestionInfo, setQuestions } = questionSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const questionState = (state: RootState) => state.question
