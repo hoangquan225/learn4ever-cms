@@ -11,6 +11,9 @@ import { feedbackChild } from "../../submodule/utils/contants";
 import { courseState, requestLoadByIdTagAndCategory } from "../courses/courseSlice";
 import { Button } from "antd/es/radio";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { apiLoadCategorys } from "../../api/categoryApi";
+import { Course } from "../../submodule/models/course";
+import { apiLoadCourses } from "../../api/courseApi";
 
 interface DataType {
   key: number;
@@ -33,7 +36,6 @@ const status = [
   },
 ]
 
-
 const Feedback = () => {
   const dispatch = useAppDispatch()
   const feedbackStates = useAppSelector(feedbackState)
@@ -42,7 +44,7 @@ const Feedback = () => {
   const courses = courseStates.courses;
   const [idCourse, setIdCourse] = useState<string>();
   const [type, setType] = useState<string[]>([]);
-
+  const [dataCourse, setDataCourse] = useState<Course[]>([]);
   
 const columns: ColumnsType<DataType> = [
   {
@@ -75,7 +77,7 @@ const columns: ColumnsType<DataType> = [
     key: "idCourse",
     render: (idCourse: string) => (
       <>
-        {courses?.map((o) =>(o.id === idCourse ? o.courseName : ""))}
+        {dataCourse?.find((o) =>(o.id === idCourse))?.courseName}
       </>
     ),
   },
@@ -134,8 +136,11 @@ const columns: ColumnsType<DataType> = [
   },
 ];
 
+console.log(dataCourse);
+
   useEffect(() => {
     loadCategorys(TTCSconfig.STATUS_PUBLIC)
+    loadCourses(TTCSconfig.STATUS_PUBLIC)
   }, [])
 
   useEffect(() => {
@@ -156,9 +161,20 @@ const columns: ColumnsType<DataType> = [
         duration: 1.5
       })
     }
-  }
+  }  
 
-  const loadCategorys = async (status: number) => {
+  const loadCourses = async (status: number) => {
+    try {
+      const res = await apiLoadCourses({status})
+      setDataCourse(res.data.data.map((o :any) => new Course(o)))
+    } catch (error) {
+      notification.error({
+        message: "không tải được danh sach danh mục",
+      });
+    }
+  };
+
+  const loadCategorys = async (status: number) => { 
     try {
       const actionResult = await dispatch(
         requestLoadCategorys({
