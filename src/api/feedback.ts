@@ -25,3 +25,10 @@ export const apiLoadFeedbackByIdTypeOrCourse = async (payload: {
         }
     })
 }
+
+export const apiUpdateFeedback = async (payload: any) => {
+    return ApiConfig(ENDPONTAPI.CREATE_FEEDBACK, {
+      payload,
+    });
+  };
+  

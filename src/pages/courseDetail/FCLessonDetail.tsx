@@ -237,7 +237,7 @@ export const LessonCourse = memo((prop: {
                         onClick={() => {
                             dispatch(setQuestionInfo(question))
                             setIsOpen(true)
-                            setIsEdit(false)
+                            setIsEdit(true)
                         }}
                     />
                 </div>
