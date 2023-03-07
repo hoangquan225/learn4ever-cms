@@ -20,8 +20,11 @@ const initialState: FeedbackState = {
     count : 0
 }
 
-export const requestLoadFeedbacks = createAsyncThunk('feedback/requestLoadFeedbacks', async () => {
-    const res = await apiLoadFeedbacks();
+export const requestLoadFeedbacks = createAsyncThunk('feedback/requestLoadFeedbacks', async (props: {
+    skip?: number;
+    limit?: number;
+}) => {
+    const res = await apiLoadFeedbacks(props);
     return res.data
 })
 
@@ -34,7 +37,7 @@ export const requestLoadFeedbacksByIdCourse = createAsyncThunk('feedback/request
 
 
 export const requestLoadFeedbacksByTypeOrCourse = createAsyncThunk('feedback/requestLoadFeedbacksByTypeOrCourse', async (props: {
-    type?: string[], idCourse?: string
+    type?: string[], idCourse?: string, limit?: number, skip?: number
 }) => {
     const res = await apiLoadFeedbackByIdTypeOrCourse(props);
     return res.data
@@ -47,6 +50,11 @@ export const feedbackSlice = createSlice({
     reducers: {
         setFeedbackInfo : (state, action) => {
             state.feedbackInfo = action.payload
+        },
+        setFeedbacks : (state, action) => {
+            console.log(state.feedbacks);
+            
+            state.feedbacks = action.payload
         }
     },
     extraReducers: (builder) => {
@@ -97,7 +105,7 @@ export const feedbackSlice = createSlice({
     }
 })
 
-export const { setFeedbackInfo } = feedbackSlice.actions
+export const { setFeedbackInfo, setFeedbacks } = feedbackSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const feedbackState = (state: RootState) => state.feedback

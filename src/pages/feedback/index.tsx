@@ -35,7 +35,7 @@ import { apiLoadCourses } from "../../api/courseApi";
 import ModalCreateAndUpdateQuestion from "../../components/ModalCreateAndUpdateQuestion";
 import { Question } from "../../submodule/models/question";
 import { questionState, setQuestionInfo } from "../../redux/question";
-import { apiUpdateFeedback } from "../../api/feedback";
+import { apiLoadFeedbacks, apiUpdateFeedback } from "../../api/feedback";
 
 interface DataType {
   id: string | undefined;
@@ -74,6 +74,7 @@ const Feedback = () => {
   const [dataCourse, setDataCourse] = useState<Course[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [page, setPage] = useState(1);
 
   const columns: ColumnsType<DataType> = [
     {
@@ -157,7 +158,7 @@ const Feedback = () => {
     {
       title: "Hành động",
       key: "action",
-      render: (_, { dataQuestion }) => (
+      render: (text, { dataQuestion }) => (
         <Space size="middle">
           <Tooltip placement="top" title="Chỉnh sửa">
             <Button
@@ -174,9 +175,9 @@ const Feedback = () => {
           <Popconfirm
             placement="topRight"
             title="Bạn có chắc bạn muốn xóa mục này không?"
-            // onConfirm={() => {
-            //   handleDelete(text)
-            // }}
+            onConfirm={() => {
+              hanldeUpdateStatus(-1, text)
+            }}
             okText="Yes"
             cancelText="No"
           >
@@ -196,17 +197,25 @@ const Feedback = () => {
     loadCourses(TTCSconfig.STATUS_PUBLIC);
   }, []);
 
+  // useEffect(() => {
+  //     handleLoadFeedbacks(page*10 - 10, 10)
+  // }, [page]);
+
   useEffect(() => {
-    if (type[0] || idCourse) {
-      handleChangeTypeAndCourse(type || [], idCourse || "");
-    } else {
-      handleLoadFeedbacks();
-    }
+    setPage(1)
   }, [idCourse, type]);
 
-  const handleLoadFeedbacks = async () => {
+  useEffect(() => {
+    if (type[0] || idCourse) {
+      handleChangeTypeAndCourse(type || [], idCourse || "", page*10 - 10, 10);
+    } else {
+      handleLoadFeedbacks(page*10 - 10, 10)
+    }
+  }, [idCourse, type, page]);
+
+  const handleLoadFeedbacks = async ( skip?: number, limit?: number ) => {
     try {
-      const actionResult = await dispatch(requestLoadFeedbacks());
+      const actionResult = await dispatch(requestLoadFeedbacks({ skip, limit }));
       unwrapResult(actionResult);
     } catch (error) {
       notification.error({
@@ -262,19 +271,21 @@ const Feedback = () => {
 
   const handleChangeTypeAndCourse = async (
     type: string[],
-    idCourse: string
+    idCourse: string,
+    skip?: number,
+    limit?: number
   ) => {
     try {
       if (type[0] || idCourse) {
         const actionResult = await dispatch(
           requestLoadFeedbacksByTypeOrCourse({
             type,
-            idCourse: idCourse,
+            idCourse,
+            limit,
+            skip
           })
         );
         unwrapResult(actionResult);
-      } else {
-        handleLoadFeedbacks();
       }
     } catch (error) {
       notification.error({
@@ -283,7 +294,7 @@ const Feedback = () => {
     }
   };
 
-  const hanldeUpdateStatus = async (updateStatus: string, feedback: any) => {
+  const hanldeUpdateStatus = async (updateStatus: number, feedback: any) => {
     const res = await apiUpdateFeedback({
       ...feedback,
       status: updateStatus
@@ -366,6 +377,14 @@ const Feedback = () => {
           idQuestion : feedback.idQuestion || "",
           idUser: feedback.idUser || "",
         }))}
+        pagination={{
+          total: feedbackStates.count, 
+          pageSize: 10,
+          current: page, 
+          onChange: (page) => {
+            setPage(page)
+          }
+        }}
       />
     </>
   );
