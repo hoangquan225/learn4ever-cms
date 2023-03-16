@@ -75,6 +75,7 @@ const Feedback = () => {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [page, setPage] = useState(1);
+  const [isLoad, setIsLoad] = useState<boolean>(false);
 
   const columns: ColumnsType<DataType> = [
     {
@@ -207,9 +208,9 @@ const Feedback = () => {
 
   useEffect(() => {
     if (type[0] || idCourse) {
-      handleChangeTypeAndCourse(type || [], idCourse || "", page*10 - 10, 10);
+      handleChangeTypeAndCourse(type || [], idCourse || "", page*4 - 4, 4);
     } else {
-      handleLoadFeedbacks(page*10 - 10, 10)
+      handleLoadFeedbacks(page*4 - 4, 4)
     }
   }, [idCourse, type, page]);
 
@@ -379,7 +380,7 @@ const Feedback = () => {
         }))}
         pagination={{
           total: feedbackStates.count, 
-          pageSize: 10,
+          pageSize: 4,
           current: page, 
           onChange: (page) => {
             setPage(page)
