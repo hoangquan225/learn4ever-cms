@@ -47,7 +47,7 @@ interface DataType {
   idCourse: string | undefined;
   type: number[];
   dataQuestion: Question | null;
-  idQuestion : string | undefined;
+  idQuestion: string | undefined;
   idUser: string | undefined;
 }
 
@@ -98,20 +98,20 @@ const Feedback = () => {
           <Select
             defaultValue={value}
             style={{ width: 140 }}
-            onChange={async (value) =>  {
-              hanldeUpdateStatus(value, record)
+            onChange={async (value) => {
+              hanldeUpdateStatus(value, record);
             }}
             bordered={false}
             // showArrow={false}
             options={[
               {
                 value: 0,
-                label: <Tag color={"red"}>chưa cập nhật</Tag>
+                label: <Tag color={"red"}>chưa cập nhật</Tag>,
               },
               {
                 value: 1,
-                label:  <Tag color={"green"}>đã cập nhật</Tag>
-              }
+                label: <Tag color={"green"}>đã cập nhật</Tag>,
+              },
             ]}
           />
         );
@@ -177,7 +177,7 @@ const Feedback = () => {
             placement="topRight"
             title="Bạn có chắc bạn muốn xóa mục này không?"
             onConfirm={() => {
-              hanldeUpdateStatus(-1, text)
+              hanldeUpdateStatus(-1, text);
             }}
             okText="Yes"
             cancelText="No"
@@ -203,20 +203,30 @@ const Feedback = () => {
   // }, [page]);
 
   useEffect(() => {
-    setPage(1)
+    setPage(1);
   }, [idCourse, type]);
 
   useEffect(() => {
     if (type[0] || idCourse) {
-      handleChangeTypeAndCourse(type || [], idCourse || "", page*4 - 4, 4);
+      handleChangeTypeAndCourse(
+        type || [],
+        idCourse || "",
+        page * TTCSconfig.LIMIT - TTCSconfig.LIMIT,
+        TTCSconfig.LIMIT
+      );
     } else {
-      handleLoadFeedbacks(page*4 - 4, 4)
+      handleLoadFeedbacks(
+        page * TTCSconfig.LIMIT - TTCSconfig.LIMIT,
+        TTCSconfig.LIMIT
+      );
     }
   }, [idCourse, type, page]);
 
-  const handleLoadFeedbacks = async ( skip?: number, limit?: number ) => {
+  const handleLoadFeedbacks = async (skip?: number, limit?: number) => {
     try {
-      const actionResult = await dispatch(requestLoadFeedbacks({ skip, limit }));
+      const actionResult = await dispatch(
+        requestLoadFeedbacks({ skip, limit })
+      );
       unwrapResult(actionResult);
     } catch (error) {
       notification.error({
@@ -283,7 +293,7 @@ const Feedback = () => {
             type,
             idCourse,
             limit,
-            skip
+            skip,
           })
         );
         unwrapResult(actionResult);
@@ -298,9 +308,9 @@ const Feedback = () => {
   const hanldeUpdateStatus = async (updateStatus: number, feedback: any) => {
     const res = await apiUpdateFeedback({
       ...feedback,
-      status: updateStatus
+      status: updateStatus,
     });
-  }
+  };
 
   const handleUpdatePraticeForTopic = async (question: Question) => {
     try {
@@ -318,9 +328,9 @@ const Feedback = () => {
         value={categoryStates.categoryInfo?.id}
         style={{ width: 150, marginLeft: "10px" }}
         onChange={handleChangeCategoy}
-        options={categoryStates.categorys.map(category => ({
-          value: category.id || '', 
-          label: category.name
+        options={categoryStates.categorys.map((category) => ({
+          value: category.id || "",
+          label: category.name,
         }))}
       />
       <label style={{ marginLeft: "20px" }}>chọn khóa học : </label>
@@ -353,7 +363,7 @@ const Feedback = () => {
         }))}
         listHeight={128}
       />
-      
+
       <ModalCreateAndUpdateQuestion
         isEdit={isEdit}
         isOpen={isOpen}
@@ -375,16 +385,16 @@ const Feedback = () => {
           date: feedback.createDate || null,
           type: feedback.type,
           dataQuestion: feedback.dataQuestion || null,
-          idQuestion : feedback.idQuestion || "",
+          idQuestion: feedback.idQuestion || "",
           idUser: feedback.idUser || "",
         }))}
         pagination={{
-          total: feedbackStates.count, 
-          pageSize: 4,
-          current: page, 
+          total: feedbackStates.count,
+          pageSize: TTCSconfig.PAGE_SIZE,
+          current: page,
           onChange: (page) => {
-            setPage(page)
-          }
+            setPage(page);
+          },
         }}
       />
     </>
