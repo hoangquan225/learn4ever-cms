@@ -10,60 +10,80 @@ const cx = classNames.bind(styles);
 const friends = [
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Quan Le",
+    title: "Quan",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Hung Soi",
+    title: "Hung",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Bom",
+    title: "Son",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Su",
+    title: "Ha",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Hung Dan",
+    title: "Tan",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Duy Tom",
-  },
-
-  {
-    src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Su",
-  },
-  {
-    src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Hung Dan",
-  },
-  {
-    src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Duy Tom",
+    title: "Duy",
   },
 
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Hung Dan",
+    title: "Quang",
   },
   {
     src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
-    title: "Duy Tom",
+    title: "Huy",
+  },
+  {
+    src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
+    title: "Truong",
+  },
+
+  {
+    src: "https://fullstack.edu.vn/static/media/fallback-avatar.155cdb2376c5d99ea151.jpg",
+    title: "Dang",
   },
 ];
 
 const messages = [
   {
-    desc: "vcl luon dau cat moi",
+    desc: "co cong viec gi khong a",
     isMe: true,
   },
   {
-    desc: "co le can 1 cai bau duoi",
+    desc: "chinh sua cac bai hoc di nhe",
     isMe: false,
+  },
+  {
+    desc: "xem cac danh gia va cap nhat luon",
+    isMe: false,
+  },
+  {
+    desc: "da oke sep",
+    isMe: true,
+  },
+  {
+    desc: "co cong viec gi khong a",
+    isMe: true,
+  },
+  {
+    desc: "chinh sua cac bai hoc di nhe",
+    isMe: false,
+  },
+  {
+    desc: "xem cac danh gia va cap nhat luon",
+    isMe: false,
+  },
+  {
+    desc: "da oke sep",
+    isMe: true,
   },
 ];
 
@@ -101,7 +121,7 @@ const ChatBot = () => {
               alt="avatar"
               className={cx("chatbot__msg--info-img")}
             />
-            <span className={cx("chatbot__msg--info-name")}>Quan Le</span>
+            <span className={cx("chatbot__msg--info-name")}>Quan</span>
           </div>
           <List
             className={cx("chatbot__msg--list")}
