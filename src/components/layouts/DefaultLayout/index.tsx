@@ -110,7 +110,7 @@ const LayoutDefault = ({ children }: { children?: any }) => {
         />
       </Sider>
       <Layout className={cx("site-layout")}>
-        <Content style={{ margin: "0 16px" }}>
+        <Content>
           <div className={cx("site-layout-background")}>{children}</div>
         </Content>
         <Footer style={{ textAlign: "center", padding: "20px" }}>
