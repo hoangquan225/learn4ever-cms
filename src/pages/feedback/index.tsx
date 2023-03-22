@@ -323,7 +323,6 @@ const Feedback = () => {
     <>
       <label>chọn danh mục : </label>
       <Select
-        // defaultValue={provinceData[0]}
         placeholder={"Chọn danh mục"}
         value={categoryStates.categoryInfo?.id}
         style={{ width: 150, marginLeft: "10px" }}

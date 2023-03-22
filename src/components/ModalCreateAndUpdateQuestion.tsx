@@ -46,17 +46,17 @@ const ModalCreateAndUpdateQuestion = (props: {
 
     const handleOk = async () => {
 
-        // console.log(new Question({
-        //     ...question,
-        //     answer: answers,
-        //     question: questionRef.current?.getContent(),
-        //     hint: hintRef.current?.getContent(),
-        //     index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
-        //             ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
-        //             : (question?.index ? question?.index : questionStates.total + 1),
-        //     idTopic: topicStates.dataTopic?.id,
-        //     status: TTCSconfig.STATUS_PUBLIC,
-        // }));
+        console.log(new Question({
+            ...question,
+            answer: answers,
+            question: questionRef.current?.getContent(),
+            hint: hintRef.current?.getContent(),
+            index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
+                    ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
+                    : (question?.index ? question?.index : questionStates.total + 1),
+            idTopic: topicStates.dataTopic?.id,
+            status: TTCSconfig.STATUS_PUBLIC,
+        }));
 
         try {
             const res = await dispatch(requestUpdateQuestion(new Question({
@@ -67,7 +67,7 @@ const ModalCreateAndUpdateQuestion = (props: {
                 index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
                     ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
                     : (question?.index ? question?.index : questionStates.total + 1),
-                // idTopic: topicStates.dataTopic?.id,
+                idTopic: topicStates.dataTopic?.id,
                 status: TTCSconfig.STATUS_PUBLIC,
             })))
             
