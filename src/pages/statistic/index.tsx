@@ -159,10 +159,9 @@ const StatisticPage = () => {
             backgroundColor: datasetLabel[Object.keys(statistic)[0] as keyof typeof datasetLabel].color,
           }))
         }}
-      />;
+      />
     </div>
-
-  </div>;
+  </div>
 };
 
 export default StatisticPage;
