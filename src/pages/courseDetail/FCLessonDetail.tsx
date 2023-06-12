@@ -1,6 +1,6 @@
-import { ClockCircleOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, DeleteOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { Collapse, Modal, notification, Radio, Space, Switch, Tooltip, Typography, UploadProps } from 'antd'
+import { Collapse, Modal, notification, Popconfirm, Radio, Space, Switch, Tooltip, Typography, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
@@ -20,6 +20,7 @@ import styles from "./courseDetail.module.scss"
 import { requestLoadTopicById, requestUpdateTopic, topicState } from "./topicSlice"
 import { FaSync } from "react-icons/fa"
 import { Topic } from "../../submodule/models/topic"
+import { apiDeleteQuestion } from "../../api/question"
 
 const cx = classNames.bind(styles);
 
@@ -222,6 +223,18 @@ export const LessonCourse = memo((prop: {
 
     };
 
+    const handleDeleteQuetions = async (id: string) => {
+        try {
+            const res = await apiDeleteQuestion({ id })
+            handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+        } catch (error) {
+            notification.error({
+                message: 'server error!!',
+                duration: 1.5
+            })
+        }
+    };
+
     const handleAsyncTime = () => {
         setTimePratice(Math.floor(refVideo.current.currentTime))
     }
@@ -233,13 +246,27 @@ export const LessonCourse = memo((prop: {
                 <div className={cx('question_number')}>
                     Câu hỏi {question.index}
                     <Button
+                        className={cx('question_action')}
                         icon={<EditOutlined color="#52c41a" />}
                         onClick={() => {
                             dispatch(setQuestionInfo(question))
                             setIsOpen(true)
-                            setIsEdit(false)
+                            setIsEdit(true)
                         }}
                     />
+                    <Popconfirm
+                        placement="top"
+                        title="Bạn có chắc bạn muốn xóa câu hỏi này không?"
+                        onConfirm={() => {
+                            handleDeleteQuetions(question.id || "");
+                        }}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Tooltip placement="top" title="Xóa">
+                            <Button icon={<DeleteOutlined color="#52c41a" />} />
+                        </Tooltip>
+                    </Popconfirm>
                 </div>
                 <div style={{ fontWeight: 500 }}>Đề bài :</div>
                 <div dangerouslySetInnerHTML={{ __html: question.question }} />

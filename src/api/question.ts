@@ -16,3 +16,9 @@ export const apiUpdateQuestion = async (payload: Question) => {
         payload
     })
 }
+
+export const apiDeleteQuestion = async (payload: {id: string}) => {
+    return ApiConfig("/question/delete-question", {
+        payload
+    })
+}

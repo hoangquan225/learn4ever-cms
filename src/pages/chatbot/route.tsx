@@ -1,10 +1,10 @@
-import { BarChartOutlined } from "@ant-design/icons";
+import { MailOutlined } from "@ant-design/icons";
 import { lazy } from "react";
 
 const route = {
-  path: "/statistic",
-  label: "Thống kê",
-  icon: <BarChartOutlined />,
+  path: "/chatbot",
+  label: "Chat",
+  icon: <MailOutlined />,
   exact: true,
   public: true,
   component: lazy(() => import(".")),
