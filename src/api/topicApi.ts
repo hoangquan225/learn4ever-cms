@@ -34,7 +34,7 @@ export const apiLoadTopicsByCourse = async (params: {
     parentId?: string,
     status?: number
 }) => {
-    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_COURSE, { params })
+    return ApiConfig(ENDPONTAPI.GET_TOPIC_BY_COURSE, { params: {...params, status: 1} })
 }
 
 
