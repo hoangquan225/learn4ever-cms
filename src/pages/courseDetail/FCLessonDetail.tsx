@@ -180,14 +180,20 @@ export const LessonCourse = memo((prop: {
     }
 
     const handleUpdatePraticeForTopic = async (question: Question) => {
-        const timePracticeInVideo: {
-            time: number;
-            totalQuestion: number;
-            idQuestion: string[];
-        } = {
-            time: timePratice,
-            totalQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? topicStates.dataTopic?.timePracticeInVideo[0]?.totalQuestion + 1 : 1,
-            idQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? [question.id || '', ...topicStates.dataTopic?.timePracticeInVideo[0]?.idQuestion] : [question.id || '']
+        let timePracticeInVideo: {
+            time?: number;
+            totalQuestion?: number;
+            idQuestion?: string[];
+        } = {}
+
+        if(!isEdit) {
+            timePracticeInVideo = {
+                time: timePratice,
+                totalQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? topicStates.dataTopic?.timePracticeInVideo[0]?.totalQuestion + 1 : 1,
+                idQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? [question.id || '', ...topicStates.dataTopic?.timePracticeInVideo[0]?.idQuestion] : [question.id || '']
+            }
+        } else {
+            timePracticeInVideo = topicStates.dataTopic?.timePracticeInVideo?.[0] || {};
         }
 
         try {

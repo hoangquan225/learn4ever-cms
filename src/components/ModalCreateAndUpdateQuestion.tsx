@@ -58,15 +58,20 @@ const ModalCreateAndUpdateQuestion = (props: {
         //     status: TTCSconfig.STATUS_PUBLIC,
         // }));
 
+        let indexQuestion = question?.index;
+        if(!isEdit) {
+           indexQuestion = topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
+           ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
+           : (question?.index ? question?.index : questionStates.total + 1) 
+        }
+
         try {
             const res = await dispatch(requestUpdateQuestion(new Question({
                 ...question,
                 answer: answers,
                 question: questionRef.current?.getContent(),
                 hint: hintRef.current?.getContent(),
-                index: topicStates.dataTopic?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO 
-                    ? topicStates.dataTopic.timePracticeInVideo?.length ? topicStates.dataTopic.timePracticeInVideo[0].questionData.length + 1 : 1
-                    : (question?.index ? question?.index : questionStates.total + 1),
+                index: indexQuestion,
                 idTopic: topicStates.dataTopic?.id,
                 status: TTCSconfig.STATUS_PUBLIC,
             })))
