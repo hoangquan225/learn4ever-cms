@@ -24,6 +24,12 @@ import { apiDeleteQuestion } from "../../api/question"
 
 const cx = classNames.bind(styles);
 
+const labelColapseLesson = { 
+    [TTCSconfig.TYPE_TOPIC_VIDEO]: "Thông tin bài học", 
+    [TTCSconfig.TYPE_TOPIC_PRATICE]: "Thông tin bài tập", 
+    [TTCSconfig.TYPE_TOPIC_DOCUMENT]: "Thông tin tài liệu"
+}
+
 export const LessonCourse = memo((prop: {
     onloadTopic?: (idCourse: string, type: number, parentId?: string) => Promise<void>,
     type?: number,
@@ -69,13 +75,13 @@ export const LessonCourse = memo((prop: {
         }
         if (topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) {
             handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
-        } else if(topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
+        } else if (topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
             // video 
-            if(topicStates.dataTopic.timePracticeInVideo?.length) {
+            if (topicStates.dataTopic.timePracticeInVideo?.length) {
                 setIsPraticeInVideo(true)
                 setTimePratice(topicStates.dataTopic.timePracticeInVideo[0].time)
                 dispatch(setQuestions(topicStates.dataTopic.timePracticeInVideo[0].questionData))
-            }else {
+            } else {
                 setIsPraticeInVideo(false)
                 setTimePratice(0)
                 dispatch(setQuestions([]))
@@ -152,6 +158,10 @@ export const LessonCourse = memo((prop: {
                 ...value,
                 des: descRef?.current?.getContent(),
                 video,
+                timePracticeInVideo: topicStates.dataTopic?.timePracticeInVideo ? [{
+                    ...topicStates.dataTopic?.timePracticeInVideo[0],
+                    time: timePratice 
+                }] : [],
                 updateDate: moment().valueOf()
             }))
             const data = unwrapResult(actionResult);
@@ -170,14 +180,20 @@ export const LessonCourse = memo((prop: {
     }
 
     const handleUpdatePraticeForTopic = async (question: Question) => {
-        const timePracticeInVideo: {
-            time: number;
-            totalQuestion: number;
-            idQuestion: string[];
-        } = {
-            time: timePratice,
-            totalQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? topicStates.dataTopic?.timePracticeInVideo[0]?.totalQuestion + 1 : 1,
-            idQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? [question.id || '',...topicStates.dataTopic?.timePracticeInVideo[0]?.idQuestion] : [question.id || '']
+        let timePracticeInVideo: {
+            time?: number;
+            totalQuestion?: number;
+            idQuestion?: string[];
+        } = {}
+
+        if(!isEdit) {
+            timePracticeInVideo = {
+                time: timePratice,
+                totalQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? topicStates.dataTopic?.timePracticeInVideo[0]?.totalQuestion + 1 : 1,
+                idQuestion: topicStates.dataTopic?.timePracticeInVideo?.length ? [question.id || '', ...topicStates.dataTopic?.timePracticeInVideo[0]?.idQuestion] : [question.id || '']
+            }
+        } else {
+            timePracticeInVideo = topicStates.dataTopic?.timePracticeInVideo?.[0] || {};
         }
 
         try {
@@ -197,12 +213,12 @@ export const LessonCourse = memo((prop: {
 
     const handleClickTopicChild = async (id: string) => {
         try {
-          const requestResult = await dispatch(requestLoadTopicById({ id }))
-          unwrapResult(requestResult)
+            const requestResult = await dispatch(requestLoadTopicById({ id }))
+            unwrapResult(requestResult)
         } catch (error) {
-          message.error('không load được, lỗi server')
+            message.error('không load được, lỗi server')
         }
-      }
+    }
 
     const handleLoadQuestionByIdtopic = async (idTopic: string, status: number) => {
         try {
@@ -471,7 +487,8 @@ export const LessonCourse = memo((prop: {
                 topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicType === TTCSconfig.TYPE_TOPIC_VIDEO || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM ? (
                     <>
                         <Collapse defaultActiveKey={topicType === TTCSconfig.TYPE_TOPIC_VIDEO ? ['1'] : ['2']} onChange={handleChangeCollapse}>
-                            <Collapse.Panel header="Thông tin bài tập" key="1">
+                            <Collapse.Panel header=
+                                {topicType && labelColapseLesson[topicType]} key="1">
                                 {renderInfoTopic()}
                             </Collapse.Panel>
                             {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) && (

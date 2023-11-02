@@ -155,8 +155,8 @@ const CourseDetail = () => {
 
   const handleDrapEndTopicChild = async (result: any) => {
     const idTopicChild = result.draggableId;
-    const topicParent = topicParentList?.find(topic => topic?.topicChildData?.find(o => o?.id === idTopicChild))
-    let topicChild = _.sortBy(topicParent?.topicChildData, [(o) => {
+    const topicParent = topicParentList?.find(topic => !!topic?.topicChildData?.find(o => o?.id === idTopicChild))
+    let topicChild = _.sortBy(topicParent?.topicChildData || [], [(o) => {
       return o.index;
     }], ["esc"]
     )
@@ -224,7 +224,7 @@ const CourseDetail = () => {
       topicType,
       parentId: parent?.id || null,
       idCourse: courseStates.courseInfo?.id,
-      index: key === '0' ? (topicStates.topics.length || 0) + 1 : (parent?.topicChildData.length || 0) + 1
+      index: key === '0' ? (topicStates.topics.length || 0) + 1 : (parent?.topicChildData?.length || 0) + 1
     })))
     setIsOpenEdit(true)
   };
@@ -380,10 +380,9 @@ const CourseDetail = () => {
                                       {...provided.droppableProps}
                                     >
                                       {
-                                        _.sortBy(topic.topicChildData, [(o) => {
+                                        !!topic.topicChildData && _.sortBy(topic.topicChildData, [(o) => {
                                           return o.index;
-                                        }], ["esc"]
-                                        )
+                                        }], ["esc"])
                                           .map((topicChild, index) => (
                                             <Draggable
                                               key={topicChild?.id}
