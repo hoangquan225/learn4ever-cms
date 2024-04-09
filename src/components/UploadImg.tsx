@@ -78,7 +78,7 @@ const UploadImg = ({
                     const { onSuccess = () => {}, onError = () => {}, file } = options;
                     try {
                         const res = await apiUploadFile(file)
-                        onSuccess("oke")
+                        onSuccess(res.data)
                     } catch (error:any) {
                         onError(error);
                     }

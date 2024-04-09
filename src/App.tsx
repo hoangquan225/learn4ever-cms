@@ -7,10 +7,17 @@ import PrivateRoute from './components/PrivateRoute';
 import CourseDetail from './pages/courseDetail';
 import LoginPages from './pages/login';
 import routes from './pages/routes';
+import { useAxios } from './api/config';
 
 function App() {
+  function L4EHooks() {
+    useAxios()
+    return null
+  }
+
   return (
     <Router>
+      <L4EHooks />
       <Suspense fallback={<LoadingOutlined />}>
         <Routes>
           <Route element={<LoginPages />} key={'login'} path={"/dang-nhap"} />

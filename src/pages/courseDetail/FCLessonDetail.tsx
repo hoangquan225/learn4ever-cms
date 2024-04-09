@@ -62,6 +62,7 @@ export const LessonCourse = memo((prop: {
     const [timePratice, setTimePratice] = useState<number>(0);
 
     useEffect(() => {
+        console.log(topicStates);
         setIsUploadVideo(1)
         setKeyUpload(Math.random())
         if (topicStates.dataTopic) {
@@ -101,7 +102,7 @@ export const LessonCourse = memo((prop: {
                 setUrlVideoUpload(data?.url)
                 setUrlVideo(data?.url)
                 form.setFieldValue('timeExam', Math.floor(data?.duration))
-                onSuccess("oke")
+                onSuccess(data?.url)
             } catch (error: any) {
                 onError(error);
             }
@@ -158,7 +159,7 @@ export const LessonCourse = memo((prop: {
                 ...value,
                 des: descRef?.current?.getContent(),
                 video,
-                timePracticeInVideo: topicStates.dataTopic?.timePracticeInVideo ? [{
+                timePracticeInVideo: topicStates.dataTopic?.timePracticeInVideo?.length ? [{
                     ...topicStates.dataTopic?.timePracticeInVideo[0],
                     time: timePratice 
                 }] : [],
