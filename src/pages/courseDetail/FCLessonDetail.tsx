@@ -27,7 +27,8 @@ const cx = classNames.bind(styles);
 const labelColapseLesson = { 
     [TTCSconfig.TYPE_TOPIC_VIDEO]: "Thông tin bài học", 
     [TTCSconfig.TYPE_TOPIC_PRATICE]: "Thông tin bài tập", 
-    [TTCSconfig.TYPE_TOPIC_DOCUMENT]: "Thông tin tài liệu"
+    [TTCSconfig.TYPE_TOPIC_DOCUMENT]: "Thông tin tài liệu",
+    [TTCSconfig.TYPE_TOPIC_EXAM]: "Thông tin đề kiểm tra",
 }
 
 export const LessonCourse = memo((prop: {
@@ -75,7 +76,9 @@ export const LessonCourse = memo((prop: {
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
         }
         if (topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_PRATICE || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) {
-            handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+            if(topicStates.dataTopic?.id) {
+                handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+            }
         } else if (topicStates.dataTopic?.id && topicType === TTCSconfig.TYPE_TOPIC_VIDEO) {
             // video 
             if (topicStates.dataTopic.timePracticeInVideo?.length) {
