@@ -1,9 +1,15 @@
 import styles from "./chatbot.module.scss";
 import classNames from "classnames/bind";
 import Sider from "antd/es/layout/Sider";
-import { Avatar, Input, Layout, List, Menu } from "antd";
+import { Avatar, Button, Input, Layout, List, Upload, notification } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { FaLink, FaTelegramPlane } from "react-icons/fa";
+import { UploadOutlined } from "@ant-design/icons";
+import { apiUploadExcel } from "../../api/uploadApi";
+import readXlsxFile from "read-excel-file";
+import {  useState } from "react";
+import { createQuestionByExcel } from "../../api/question";
+import TTCSconfig from "../../submodule/common/config";
 
 const cx = classNames.bind(styles);
 
@@ -88,8 +94,93 @@ const messages = [
 ];
 
 const ChatBot = () => {
+  const [listQuestionInsert, setListQuestionInsert] = useState<any>()
+
+  const handleFileUpload = (file: any) => {
+    readXlsxFile(file)
+      .then((rows) => {
+        const questions = convertToObjectArray(rows);
+        setListQuestionInsert(questions);
+      })
+      .catch((error) => {
+        console.error('Lỗi khi đọc tệp Excel:', error);
+      });
+  };
+
+  const convertToObjectArray = (array: any) => {
+    const headers = array[0]; 
+    const data = array.slice(1);
+    const objectArray = data.map((row) => {
+      const obj = {};
+      obj["question"] = row[0];
+      obj["hint"] = row[1]; 
+      obj["answer"] = [];
+      for (let i = 2; i < row.length; i++) {
+        if (row[i] !== null) {
+          obj["answer"].push({ [`answer${i - 2}`]: row[i].toString()});
+        }
+      }
+      return obj;
+    });
+    return objectArray;
+  };
+
+  const uploadQs = async () => {
+    try {
+      const res = await createQuestionByExcel({ questions: listQuestionInsert, idTopic: "66409ff6d5f81fbcfc207793", isDelete: false});
+      if (res.status === TTCSconfig.STATUS_SUCCESS) {
+        notification.success({
+          message: "Upload thành công",
+          duration: 1.5,
+        });
+      } else {
+        notification.success({
+          message: "Upload thất bại",
+          duration: 1.5,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  } 
+
   return (
     <div className={cx("chatbot")}>
+      <Upload
+        customRequest={async (options) => {
+            const { onSuccess = () => {}, onError = () => {}, file } = options;
+            try {
+                // const res = await apiUploadExcel(file)
+                // onError(res.data);
+                handleFileUpload(file)
+            } catch (error:any) {
+                onError(error);
+            }
+        }}
+        maxCount={1}
+        beforeUpload={(file) => {
+            // const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+            // if (!isJpgOrPng) {
+            //     message.error("You can only upload JPG/PNG file!");
+            // }
+            // const isLt2M = file.size / 1024 / 1024 < 2;
+            // if (!isLt2M) {
+            //     message.error("Image must smaller than 2MB!");
+            // }
+            // if (isJpgOrPng && isLt2M) {
+            //     return true;
+            // } else {
+            //     return false;
+            // }
+        }}
+        showUploadList={false}
+        accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      >
+        <Button icon={<UploadOutlined />}>Click to Upload</Button>
+      </Upload>
+
+      <Button onClick={uploadQs}>Upload qs</Button>
+
       <Layout className={cx("chatbot__wrapper")}>
         <Sider collapsedWidth="0" width={320} className={cx("chatbot__sider")}>
           <div className={cx("chatbot__sider--top")}>

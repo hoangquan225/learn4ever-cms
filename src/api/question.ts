@@ -22,3 +22,10 @@ export const apiDeleteQuestion = async (payload: {id: string}) => {
         payload
     })
 }
+
+export const createQuestionByExcel = async (payload: {questions: any, idTopic: string, isDelete: boolean}) => {
+    return ApiConfig("/question/update-question-by-excel", {
+        payload
+    })
+}
+
