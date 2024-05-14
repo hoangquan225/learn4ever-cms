@@ -37,6 +37,7 @@
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.4.4",
     "react-scripts": "5.0.1",
+    "read-excel-file": "^5.8.1",
     "require-context": "^1.1.0",
     "sass": "^1.56.1",
     "slugify": "^1.6.5",
