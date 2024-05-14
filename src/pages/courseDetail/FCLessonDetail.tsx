@@ -1,6 +1,6 @@
 import { ClockCircleOutlined, DeleteOutlined, EditOutlined, LoadingOutlined, UploadOutlined } from "@ant-design/icons"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { Collapse, Modal, notification, Popconfirm, Radio, Space, Switch, Tooltip, Typography, UploadProps } from 'antd'
+import { Collapse, Modal, notification, Popconfirm, Radio, Space, Switch, Tooltip, Typography, UploadFile, UploadProps } from 'antd'
 import { Button, Col, Form, Input, message, Row, Select, Upload } from "antd"
 import { useForm } from "antd/es/form/Form"
 import classNames from "classnames/bind"
@@ -20,7 +20,8 @@ import styles from "./courseDetail.module.scss"
 import { requestLoadTopicById, requestUpdateTopic, topicState } from "./topicSlice"
 import { FaSync } from "react-icons/fa"
 import { Topic } from "../../submodule/models/topic"
-import { apiDeleteQuestion } from "../../api/question"
+import { apiDeleteQuestion, createQuestionByExcel } from "../../api/question"
+import readXlsxFile from "read-excel-file";
 
 const cx = classNames.bind(styles);
 
@@ -55,6 +56,8 @@ export const LessonCourse = memo((prop: {
     const [isEdit, setIsEdit] = useState<boolean>(false)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const topicType = topicStates.dataTopic?.topicType
+    const [listQuestionInsert, setListQuestionInsert] = useState<any>()
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
 
     // config exam in video 
     const [isPraticeInVideo, setIsPraticeInVideo] = useState<boolean>(false)
@@ -63,7 +66,6 @@ export const LessonCourse = memo((prop: {
     const [timePratice, setTimePratice] = useState<number>(0);
 
     useEffect(() => {
-        console.log(topicStates);
         setIsUploadVideo(1)
         setKeyUpload(Math.random())
         if (topicStates.dataTopic) {
@@ -289,7 +291,7 @@ export const LessonCourse = memo((prop: {
                     </Popconfirm>
                 </div>
                 <div style={{ fontWeight: 500 }}>Đề bài :</div>
-                <div dangerouslySetInnerHTML={{ __html: question.question }} />
+                <div style={{ fontSize: "16px", fontStyle: "italic" }} dangerouslySetInnerHTML={{ __html: question.question }} />
                 <div className={cx('question_answers')}>
                     {
                         question.answer.map(item => {
@@ -473,6 +475,65 @@ export const LessonCourse = memo((prop: {
         )
     }
 
+    const handleConvertFileUpload = (file: any) => {
+        readXlsxFile(file)
+            .then((rows) => {
+                const questions = convertToObjectArray(rows);
+                setListQuestionInsert(questions);
+                console.log({questions});
+            })
+            .catch((error) => {
+                console.error('Lỗi khi đọc tệp Excel:', error);
+            });
+    };
+
+    const convertToObjectArray = (array: any) => {
+        const headers = array[0]; 
+        const data = array.slice(1);
+        const objectArray = data.map((row) => {
+          const obj = {};
+          obj["question"] = row[0];
+          obj["hint"] = row[1]; 
+          obj["answer"] = [];
+          for (let i = 2; i < row.length; i++) {
+            if (row[i] !== null) {
+              obj["answer"].push({ [`answer${i - 2}`]: row[i].toString()});
+            }
+          }
+          return obj;
+        });
+        return objectArray;
+      };
+
+    const handleRemoveFileExcel = (file: any) => {
+        const newFileList = fileList.filter(f => f.uid !== file.uid);
+        setFileList(newFileList);
+        setListQuestionInsert([]);
+    }
+
+    const uploadManyQuestion = async (isDelete: boolean) => {
+        try {
+            const res = await createQuestionByExcel({ questions: listQuestionInsert, idTopic: topicStates.dataTopic?.id || '', isDelete});
+            console.log(res);
+            if (res.data.status === TTCSconfig.STATUS_SUCCESS) {
+                notification.success({
+                message: "Upload thành công",
+                duration: 1.5,
+                });
+                handleLoadQuestionByIdtopic(topicStates.dataTopic?.id || '', TTCSconfig.STATUS_PUBLIC)
+                setListQuestionInsert([]); 
+                setFileList([]); 
+            } else {
+                notification.success({
+                message: "Upload thất bại",
+                duration: 1.5,
+                });
+            }
+        } catch (error) {
+          console.log(error);
+        }
+    }
+
     return (
         <div>
             <Typography.Title level={4}>
@@ -507,6 +568,58 @@ export const LessonCourse = memo((prop: {
                                             marginBottom: 10
                                         }}
                                     >Tạo câu hỏi</Button>
+                                    <Space style={{
+                                            margin: "0 16px"
+                                        }}>
+                                        <Upload
+                                            customRequest={async (options) => {
+                                                const { onSuccess = () => {}, onError = () => {}, file } = options;
+                                                try {
+                                                    // const res = await apiUploadExcel(file)
+                                                    // onError(res.data);
+                                                    handleConvertFileUpload(file)
+                                                    onSuccess("ok");
+                                                } catch (error:any) {
+                                                    onError(error);
+                                                }
+                                            }}
+                                            fileList={fileList}
+                                            maxCount={1}
+                                            beforeUpload={(file) => {
+                                                const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                                                if (!isExcel) {
+                                                message.error("You can only upload Excel file (xlsx)!");
+                                                }
+                                                const isLt2M = file.size / 1024 / 1024 < 2;
+                                                if (!isLt2M) {
+                                                    message.error("File must smaller than 2MB!");
+                                                }
+                                                setFileList([file]);
+                                                if (isExcel && isLt2M) {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            }}
+                                            // showUploadList={false}
+                                            accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                                            onRemove={handleRemoveFileExcel} 
+                                        >
+                                            <Button type="primary" icon={<UploadOutlined />}>Upload questions using Excel</Button>
+                                        </Upload>
+                                    </Space>
+
+                                    {listQuestionInsert?.length > 0 && <Popconfirm
+                                        placement="top"
+                                        title="Bạn muốn xóa câu hỏi cũ không?"
+                                        okText="Có"
+                                        cancelText="Không"
+                                        onCancel={() => uploadManyQuestion(false)}
+                                        onConfirm={() => uploadManyQuestion(true)}
+                                    >
+                                        <Button type="primary" >Upload Question</Button>
+                                    </Popconfirm>}
+                                    
                                     {
                                         topicType === TTCSconfig.TYPE_TOPIC_VIDEO && (
                                             <Space direction="horizontal">
