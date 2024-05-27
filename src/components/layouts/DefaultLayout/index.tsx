@@ -114,7 +114,7 @@ const LayoutDefault = ({ children }: { children?: any }) => {
           <div className={cx("site-layout-background")}>{children}</div>
         </Content>
         <Footer style={{ textAlign: "center", padding: "20px" }}>
-          learn4ever ©2022 Sản phẩm của Nhom24_TTCS
+          learn4ever ©2024 Sản phẩm của HHQ
         </Footer>
       </Layout>
     </Layout>
