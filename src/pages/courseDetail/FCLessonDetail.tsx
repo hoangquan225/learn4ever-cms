@@ -72,7 +72,8 @@ export const LessonCourse = memo((prop: {
             form.setFieldsValue({
                 name: topicStates.dataTopic?.name,
                 status: topicStates.dataTopic?.status,
-                timeExam: topicStates.dataTopic?.timeExam
+                timeExam: topicStates.dataTopic?.timeExam,
+                numQuestion: topicStates.dataTopic?.numQuestion,
             })
             setUrlVideo(topicStates.dataTopic?.video || '')
             setUrlVideoUpload(topicStates.dataTopic?.video || '')
@@ -371,6 +372,24 @@ export const LessonCourse = memo((prop: {
                                 </Form.Item>
                             )
                         }
+
+                        {
+                            !isTopicParent && topicType === TTCSconfig.TYPE_TOPIC_EXAM && (
+                                <Form.Item
+                                    name="numQuestion"
+                                    label={"Số câu hỏi"}
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: "Vui lòng nhập trường này!",
+                                        },
+                                    ]}
+
+                                >
+                                    <Input />
+                                </Form.Item>
+                            )
+                        }
                     </Col>
 
                     <Col
@@ -556,7 +575,7 @@ export const LessonCourse = memo((prop: {
                                 {topicType && labelColapseLesson[topicType]} key="1">
                                 {renderInfoTopic()}
                             </Collapse.Panel>
-                            {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo || topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM) && (
+                            {topicStates.dataTopic?.id && (topicType === TTCSconfig.TYPE_TOPIC_PRATICE || isPraticeInVideo || (!isTopicParent && topicStates.dataTopic?.type === TTCSconfig.TYPE_EXAM)) && (
                                 <Collapse.Panel header="Danh sách câu hỏi" key="2">
                                     <Typography.Title level={5} style={{ margin: 0, marginBottom: 10, borderBottom: '1px solid' }}>Danh sách câu hỏi</Typography.Title>
                                     <Button type="primary" onClick={() => {

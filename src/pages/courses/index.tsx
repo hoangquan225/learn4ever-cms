@@ -300,6 +300,11 @@ const CoursePage = () => {
       title: "Danh mục cha",
       dataIndex: "idCategory",
       key: "idCategory",
+      sorter: (a, b) => {
+        const categoryA = categorys.find(o => o.id === a.idCategory)?.name || "";
+        const categoryB = categorys.find(o => o.id === b.idCategory)?.name || "";
+        return categoryA.localeCompare(categoryB);
+      },
       render: (idCategory: string) => (
         <>
             {categorys?.map((o) =>(o.id === idCategory ? o.name : undefined))}

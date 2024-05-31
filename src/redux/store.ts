@@ -8,6 +8,7 @@ import feedbackReducer from "../pages/feedback/feedbackSlice";
 import questionReducer from "./question";
 import authReducer from "./authSlice";
 import statisticReducer from "../pages/statistic/statisticSlice";
+import userReducer from "../pages/user/usersSlice";
 
 export const store = configureStore({
     reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
         question: questionReducer,
         authState: authReducer,
         statistic: statisticReducer,
+        user: userReducer,
     },
     middleware: (getDefaultMiddle) => getDefaultMiddle({ serializableCheck: false }),
 });
