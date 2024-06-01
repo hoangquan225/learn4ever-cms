@@ -1,3 +1,6 @@
+[submodule "submodule"]
+	path = submodule
+	url = https://github.com/hoangquan225/share_common.git
 [submodule "src/submodule"]
 	path = src/submodule
-	url = https://github.com/duyhung1366/share_common.git
+	url = https://github.com/hoangquan225/share_common.git
