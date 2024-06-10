@@ -30,3 +30,13 @@ export const apiOrderCategory = async (payload: {
         payload
     })
 }
+
+export const apiGetCategoryStatistic = async (payload: {
+    status: number
+}) => {
+    return ApiConfig("/cms/get-category-statistic", {
+        params: {
+            status: payload?.status
+        }
+    })
+}

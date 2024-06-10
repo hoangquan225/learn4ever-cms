@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { apiLoadStatistics } from "../../api/statisticApi";
 import { RootState } from "../../redux/store";
+import { apiGetCategoryStatistic } from "../../api/categoryApi";
 
 interface StatisticState {
     statistics: {
@@ -9,13 +10,15 @@ interface StatisticState {
     rangeMonth: string[],
     loading: boolean,
     numResult: any,
+    categories: any,
 }
 
 const initialState: StatisticState = {
     statistics: [],
     rangeMonth: [],
     loading: false,
-    numResult: 0
+    numResult: 0,
+    categories: []
 }
 
 export const requestLoadStatistic = createAsyncThunk("statistic/requestLoadStatistic", async (props: {
@@ -26,6 +29,13 @@ export const requestLoadStatistic = createAsyncThunk("statistic/requestLoadStati
     return res.data
 })
 
+export const requestGetCategoryStatistic = createAsyncThunk("statistic/requestGetCategoryStatistic", async (props: {
+    status: number
+}) => {
+    const res = await apiGetCategoryStatistic(props)
+    return res.data
+})
+
 export const statisticSlice = createSlice({
     name: 'statistic',
     initialState,
@@ -33,7 +43,7 @@ export const statisticSlice = createSlice({
 
     },
     extraReducers: (builder) => {
-        const actionList = [requestLoadStatistic];
+        const actionList = [requestLoadStatistic, requestGetCategoryStatistic];
         actionList.forEach(action => {
             builder.addCase(action.pending, (state) => {
                 state.loading = true;
@@ -80,6 +90,15 @@ export const statisticSlice = createSlice({
             });
 
             state.numResult = result
+        }))
+
+        // load category 
+        builder.addCase(requestGetCategoryStatistic.fulfilled, ((state, action: PayloadAction<{
+            data: any,
+            status: number
+        }>) => {
+            state.loading = false
+            state.categories = action.payload.data
         }))
     }
 })
