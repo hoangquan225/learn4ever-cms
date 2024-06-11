@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { apiLoadStatistics } from "../../api/statisticApi";
+import { apiLoadStatistics, topicProgressStatistic } from "../../api/statisticApi";
 import { RootState } from "../../redux/store";
 import { apiGetCategoryStatistic } from "../../api/categoryApi";
 
@@ -11,6 +11,7 @@ interface StatisticState {
     loading: boolean,
     numResult: any,
     categories: any,
+    dataStatisticTopicProgress: any
 }
 
 const initialState: StatisticState = {
@@ -18,7 +19,8 @@ const initialState: StatisticState = {
     rangeMonth: [],
     loading: false,
     numResult: 0,
-    categories: []
+    categories: [],
+    dataStatisticTopicProgress: {}
 }
 
 export const requestLoadStatistic = createAsyncThunk("statistic/requestLoadStatistic", async (props: {
@@ -36,6 +38,16 @@ export const requestGetCategoryStatistic = createAsyncThunk("statistic/requestGe
     return res.data
 })
 
+export const requestTopicProgressStatistic = createAsyncThunk("statistic/requestTopicProgressStatistic", async (props:  {
+    startTime?: number,
+    endTime?: number,
+    idCourse?: string,
+    idCategory?: string,
+}) => {
+    const res = await topicProgressStatistic(props)
+    return res.data
+})
+
 export const statisticSlice = createSlice({
     name: 'statistic',
     initialState,
@@ -43,7 +55,7 @@ export const statisticSlice = createSlice({
 
     },
     extraReducers: (builder) => {
-        const actionList = [requestLoadStatistic, requestGetCategoryStatistic];
+        const actionList = [requestLoadStatistic, requestGetCategoryStatistic, requestTopicProgressStatistic];
         actionList.forEach(action => {
             builder.addCase(action.pending, (state) => {
                 state.loading = true;
@@ -99,6 +111,15 @@ export const statisticSlice = createSlice({
         }>) => {
             state.loading = false
             state.categories = action.payload.data
+        }))
+
+        // load category 
+        builder.addCase(requestTopicProgressStatistic.fulfilled, ((state, action: PayloadAction<{
+            data: any,
+            status: number
+        }>) => {
+            state.loading = false
+            state.dataStatisticTopicProgress = action.payload.data
         }))
     }
 })

@@ -14,7 +14,7 @@ import {
   Legend,
 } from 'chart.js';
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { requestGetCategoryStatistic, requestLoadStatistic, statisticState } from "./statisticSlice";
+import { requestGetCategoryStatistic, requestLoadStatistic, requestTopicProgressStatistic, statisticState } from "./statisticSlice";
 import { useEffect, useState } from "react";
 import { unwrapResult } from "@reduxjs/toolkit";
 import locale from 'antd/es/date-picker/locale/vi_VN';
@@ -72,11 +72,14 @@ const StatisticPage = () => {
   const dispatch = useAppDispatch()
   const statisticStates = useAppSelector(statisticState)
   const categories = statisticStates.categories;
-
+  
   const [startTime, setStartTime] = useState<moment.Moment | null>(moment())
   const [endTime, setEndTime] = useState<moment.Moment | null>(moment())
   const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
   const [status, setStatus] = useState(1);
+  const [dateTopicProgress, setDateTopicProgress] = useState<any>([null, null]);
+  const [courseId, setCourseId] = useState<any>();
+  const [categoryId, setCategoryId] = useState<any>();
 
   const { RangePicker } = DatePicker;
 
@@ -87,6 +90,10 @@ const StatisticPage = () => {
   useEffect(() => {
     handleGetCategoryStatistic(status)
   }, [status])
+
+  const handleDateChange = (value) => {
+    setDateTopicProgress(value);
+  };
 
   useEffect(() => {
     setTreeData(categories.map(e => ({
@@ -131,11 +138,39 @@ const StatisticPage = () => {
   }
 
   const onSelect = (selectedKeys: React.Key[], info: any) => {
-    console.log('selected', selectedKeys, info);
+    console.log( selectedKeys, info);
     if (info.node.children) {
-      console.log('This is a parent node');
+      if(selectedKeys[0]) {
+        setCategoryId(selectedKeys[0])
+        setCourseId(null)
+      }
     } else {
-      console.log('This is a child node');
+      if(selectedKeys[0]) {
+        setCourseId(selectedKeys[0])
+        setCategoryId(null)
+      }
+    }
+  };
+
+  const handleSubmit = async () => {
+    if(!courseId && !categoryId) {
+      return message.error("Vui lòng chọn danh mục trên cây danh mục")
+    }
+
+    const [start, end] = dateTopicProgress;
+    try {
+      const res = await dispatch(requestTopicProgressStatistic({
+        startTime: start?.valueOf(), 
+        endTime: end?.valueOf(),
+        idCourse: courseId,
+        idCategory: categoryId
+      }))
+      unwrapResult(res)
+    } catch (error) {
+      notification.error({
+        message: 'không tải được dữ liệu',
+        duration: 1.5
+      })
     }
   };
 
@@ -167,7 +202,7 @@ const StatisticPage = () => {
 
         <Row gutter={16}>
           <Col span={8}>
-            <Card bordered={false}>
+            <Card bordered={false} style={{boxShadow: "1px 10px 10px rgba(0, 0, 0, 0.2)"}}>
               <Statistic
                 title="Lượt đăng kí"
                 value={statisticStates.numResult?.numRegiter}
@@ -177,7 +212,7 @@ const StatisticPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card bordered={false}>
+            <Card bordered={false} style={{boxShadow: "1px 10px 10px rgba(0, 0, 0, 0.2)"}}>
               <Statistic
                 title="Lượt truy cập"
                 value={statisticStates.numResult?.numLogin}
@@ -187,7 +222,7 @@ const StatisticPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card bordered={false}>
+            <Card bordered={false} style={{boxShadow: "1px 10px 10px rgba(0, 0, 0, 0.2)"}}>
               <Statistic
                 title="Lượt đánh giá"
                 value={statisticStates.numResult?.numFeedback}
@@ -223,12 +258,14 @@ const StatisticPage = () => {
           />
         </div>
       </TabPane>
+
+      
       <TabPane tab="Thống kê luyện tập" key="2">
         {/* <Typography.Title level={4}>Thống kê luyện tập:</Typography.Title> */}
         <Space direction="horizontal" style={{ marginBottom: 20 }}>
           <Space>
             <label>Từ ngày - Đến ngày</label>
-            <RangePicker />
+            <RangePicker onChange={handleDateChange}/>
           </Space>
           <Space size="small">
             <label style={{ marginLeft: "20px" }}>Chọn trạng thái:</label>
@@ -243,7 +280,7 @@ const StatisticPage = () => {
             />
           </Space>
           <Space size="small">
-            <button className={cx("Button")}>
+            <button className={cx("Button")} onClick={() => handleSubmit()}>
                 Thống kê
             </button>
           </Space>
@@ -258,14 +295,34 @@ const StatisticPage = () => {
             />
           </Col>
           <Col span={20}>
-            <Card bordered={false}>
-              <Statistic
-                title="Lượt truy cập"
-                value={statisticStates.numResult?.numLogin}
-                valueStyle={{ color: datasetLabel['numLogin'].color }}
-                prefix={<ImAccessibility />}
+            <div style={{ backgroundColor: '#fff', marginTop: 20 }}>
+              <Bar
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                    },
+                    title: {
+                      display: true,
+                      text: 'Thống kê hàng tháng',
+                    },
+                  },
+                }}
+                data={{
+                  labels: Object.keys(statisticStates.dataStatisticTopicProgress),
+                  datasets: [
+                    {
+                      label: 'Số lượng học viên',
+                      data: Object.values(statisticStates.dataStatisticTopicProgress),
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1,
+                    },
+                  ]
+                }}
               />
-            </Card>
+            </div>
           </Col>
         </Row>
       </TabPane>

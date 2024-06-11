@@ -9,3 +9,19 @@ export const apiLoadStatistics = async (payload: {
         payload
     })
 }
+
+export const topicProgressStatistic = async (payload: {
+    startTime?: number,
+    endTime?: number,
+    idCourse?: string,
+    idCategory?: string,
+}) => {
+    return ApiConfig("/cms/topic-progress-statistic", {
+        payload: {
+            startTime: payload?.startTime,
+            endTime: payload?.endTime,
+            idCourse: payload?.idCourse,
+            idCategory: payload?.idCategory,
+        }
+    })
+}
