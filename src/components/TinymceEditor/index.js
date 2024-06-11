@@ -24,7 +24,7 @@ const TinymceEditor = ({ editorRef, value, heightEditor, id, onChange, inline = 
             inline={inline}
             body_class = {className}
             selector= 'textarea#full-featured'
-            apiKey={process.env.REACT_APP_EDITOR_APIKEY || "78rpkbftbm53aymyxpyzs8tc3ci5kdtuyh3yt9dutjmalc5h"}
+            apiKey={process.env.REACT_APP_EDITOR_APIKEY || "810y1h6pmvm5g7x4vxiak5zctvpb66g86t7i1aaw943z2dwh"}
             initialValue={value}
             onInit={(evt, editor) => { if (editorRef) { editorRef.current = editor } }}
             onEditorChange={(e) => {
