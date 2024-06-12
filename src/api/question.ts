@@ -7,7 +7,7 @@ export const apiLoadQuestionsByIdTopic = async (payload: {
     idTopic: string
 }) => {
     return ApiConfig(ENDPONTAPI.GET_QUESTIONS_BY_TOPIC, {
-        params: payload
+        params: {...payload, isCms: true}
     })
 }
 
